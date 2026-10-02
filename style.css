@@ -1,22 +1,24 @@
 /* =========================================================
-   学生団体ココカラ 公式サイト v6
-   ライト基調 × ティール（明るく・爽やか・親しみやすく）
-   Base #FFFFFF / Text #0C1E24 / Accent #0A7C93→#12A0B8
+   学生団体ココカラ 公式サイト v7
+   ミニマル基調（モノトーン × ティール1アクセント）
+   Base #FFFFFF / Text #14171A / Accent #0E7C8B（控えめ運用）
+   ※ v6 の構造・クラス名は維持。配色と装飾トーンのみ刷新。
    ========================================================= */
 
 :root {
   --bg: #FFFFFF;
-  --bg-2: #F2F9FB;
+  --bg-2: #F6F7F8;
   --panel: #FFFFFF;
-  --panel-2: #E8F4F8;
-  --text: #0C1E24;
-  --text-70: rgba(12, 30, 36, 0.66);
-  --text-45: rgba(12, 30, 36, 0.62);
-  --line: rgba(12, 30, 36, 0.12);
-  --line-2: rgba(12, 30, 36, 0.20);
-  --accent: #0A7C93;
-  --amber: #12A0B8;
-  --grad: linear-gradient(96deg, #066273 0%, #08758A 50%, #0A7C93 100%);
+  --panel-2: #F0F1F2;
+  --text: #14171A;
+  --text-70: rgba(20, 23, 26, 0.62);
+  --text-45: rgba(20, 23, 26, 0.42);
+  --line: rgba(20, 23, 26, 0.10);
+  --line-2: rgba(20, 23, 26, 0.18);
+  --accent: #0E7C8B;
+  --amber: #0E7C8B;
+  --grad: linear-gradient(0deg, #14171A 0%, #14171A 100%);
+  --ink: #14171A;
   --on-accent: #FFFFFF;
   --max: 1320px;
   --pad: clamp(20px, 5vw, 92px);
@@ -128,14 +130,14 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 .btn {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-jp); font-weight: 700; font-size: 15px; letter-spacing: .02em;
-  color: #fff; background: var(--grad); background-size: 140% 100%; background-position: 0 0;
-  padding: 15px 27px; border-radius: 100px; border: 0;
-  transition: transform .3s var(--ease), box-shadow .3s var(--ease), background-position .5s var(--ease);
-  box-shadow: 0 10px 26px rgba(10, 124, 147, .24);
+  color: #fff; background: var(--ink);
+  padding: 15px 27px; border-radius: 100px; border: 1px solid var(--ink);
+  transition: transform .3s var(--ease), background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
+  box-shadow: none;
 }
-.btn:hover { transform: translateY(-2px); background-position: 100% 0; box-shadow: 0 16px 34px rgba(10, 124, 147, .34); }
+.btn:hover { background: transparent; color: var(--ink); }
 .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); box-shadow: none; }
-.btn-ghost:hover { background: var(--text); color: var(--bg); box-shadow: none; }
+.btn-ghost:hover { background: var(--text); color: var(--bg); border-color: var(--text); box-shadow: none; }
 .arrow { font-size: 13px; transform: translateY(1px); }
 
 /* =========================================================
@@ -232,12 +234,14 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 
 .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%; z-index: 2; pointer-events: none; background: linear-gradient(to top, var(--bg) 12%, rgba(255,255,255,0) 100%); }
 
-/* ---- ヒーロー背景：色とりどりの四角が上から降ってくる ---- */
+/* ---- ヒーロー背景：ミニマル（装飾の四角は廃止し、静かな無地に） ---- */
 .hero-aura {
   position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  overflow: hidden; background: linear-gradient(180deg, #F2F9FC 0%, #EFF6FB 60%, #F6FBFD 100%);
-  transition: transform .5s var(--ease);
+  overflow: hidden; background: #FBFBFC;
+  transition: none;
 }
+/* 旧・降る四角／オーラ／さざ波は非表示（ミニマル化） */
+.fall-chip, .hero-aura span, .hero-aura i { display: none !important; }
 .fall-chip {
   position: absolute; top: 0;
   will-change: transform, opacity;
@@ -268,8 +272,8 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
   .fall-chip, .fall-chip > .fall-move > i { animation: none !important; }
 }
 
-/* ---- フッター背景：薄い四角が下から上へ ---- */
-.footer-fall { position: absolute; left: 0; right: 0; top: 0; height: 54%; z-index: 0; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 42%, transparent 96%); mask-image: linear-gradient(180deg, #000 42%, transparent 96%); }
+/* ---- フッター背景：薄い四角が下から上へ（ミニマル化のため非表示） ---- */
+.footer-fall { display: none !important; position: absolute; left: 0; right: 0; top: 0; height: 54%; z-index: 0; overflow: hidden; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 42%, transparent 96%); mask-image: linear-gradient(180deg, #000 42%, transparent 96%); }
 .footer-fall .foot-chip {
   position: absolute; top: 0;
   will-change: transform, opacity;
@@ -342,7 +346,7 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 a.stmt-card { cursor: pointer; text-decoration: none; color: #F2FAFC; }
 a.stmt-card:hover { transform: translateY(-4px); }
 a.stmt-card { transition: transform .4s var(--ease); }
-.stmt-card .glow { position: absolute; z-index: -1; width: 74%; height: 60%; right: -14%; top: -16%; background: var(--grad); filter: blur(56px); opacity: .6; border-radius: 50%; animation: glowfloat 9s var(--ease) infinite; }
+.stmt-card .glow { display: none; }
 @keyframes glowfloat { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-7%,5%) scale(1.1); } }
 .stmt-card .watermark { position: absolute; z-index: -1; left: 5%; right: 5%; bottom: 3%; white-space: nowrap; font-family: var(--font-en); font-weight: 900; font-style: italic; letter-spacing: -.04em; font-size: clamp(34px, 7.5vw, 76px); line-height: .8; color: rgba(255,255,255,.07); }
 .stmt-top { display: flex; align-items: flex-start; justify-content: space-between; }
@@ -365,7 +369,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 /* ---------- ACTIVITY（02） ---------- */
 .activities { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(18px, 2.4vw, 32px); }
 .activity-card { background: var(--panel); border: 1px solid var(--line); border-radius: 26px; padding: clamp(28px, 3.6vw, 48px); position: relative; overflow: hidden; transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease); }
-.activity-card:hover { transform: translateY(-6px); box-shadow: 0 22px 44px rgba(12,30,36,.10); border-color: var(--line-2); }
+.activity-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(20,23,26,.07); border-color: var(--line-2); }
 .activity-num { font-family: var(--font-en); font-weight: 900; font-size: clamp(56px, 8vw, 104px); line-height: .9; letter-spacing: -.04em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; display: block; margin-bottom: 12px; }
 .activity-badge { display: inline-block; font-family: var(--font-en); font-weight: 800; font-size: 11.5px; letter-spacing: .1em; color: var(--text); border: 1px solid var(--line-2); border-radius: 100px; padding: 5px 13px; margin-bottom: 16px; text-transform: uppercase; }
 .activity-card h3 { font-family: var(--font-jp); font-weight: 900; font-size: clamp(22px, 2.7vw, 31px); margin-bottom: 14px; }
@@ -428,7 +432,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .events-section { padding-top: 0; }
 .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: clamp(20px, 3vw, 36px); }
 .event-card { border: 1px solid var(--line); border-radius: 26px; padding: clamp(22px, 3vw, 34px); background: var(--panel); transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s; display: flex; flex-direction: column; }
-.event-card:hover { transform: translateY(-6px); box-shadow: 0 22px 44px rgba(12,30,36,.10); border-color: var(--line-2); }
+.event-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(20,23,26,.07); border-color: var(--line-2); }
 .event-status { align-self: flex-start; font-family: var(--font-jp); font-weight: 900; font-size: 13px; color: #fff; background: var(--grad); padding: 7px 15px; border-radius: 100px; margin-bottom: 18px; }
 .event-status--done { background: #64748b; }
 .event-title { font-family: var(--font-jp); font-weight: 900; font-size: clamp(21px, 2.6vw, 28px); margin-bottom: 18px; }
@@ -447,7 +451,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 /* =========================================================
    フッター
    ========================================================= */
-.site-footer { background: #06232B; color: #EAF4F7; padding: clamp(46px, 7vh, 78px) 0 0; position: relative; z-index: 5; overflow: hidden; border-top: 0; }
+.site-footer { background: #14171A; color: #EDEFF1; padding: clamp(46px, 7vh, 78px) 0 0; position: relative; z-index: 5; overflow: hidden; border-top: 0; }
 .footer-word { font-family: var(--font-en); font-weight: 900; font-style: italic; letter-spacing: .015em; font-size: clamp(60px, 18vw, 270px); line-height: .8; color: rgba(255,255,255,.06); pointer-events: none; margin-bottom: -.1em; white-space: nowrap; padding-right: .12em; }
 /* 上段: ブランド（左） + Follow Us/SNS（右） */
 .footer-main { display: flex; justify-content: space-between; align-items: center; gap: clamp(26px, 4vw, 56px); flex-wrap: wrap; padding-bottom: clamp(26px, 4vh, 40px); }
@@ -509,7 +513,8 @@ a.stmt-card { transition: transform .4s var(--ease); }
   .stats { grid-template-columns: 1fr; gap: 22px; text-align: left; }
   .hero-actions { flex-direction: column; }
   .hero-actions .btn { justify-content: center; }
-  .hero-wordmark { font-size: 24vw; }
+  /* KOKOKARA(8文字・nowrap)が画面幅を超えないように抑える */
+  .hero-wordmark { font-size: 16vw; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto; }
@@ -580,8 +585,9 @@ a.stmt-card { transition: transform .4s var(--ease); }
    写真に差し替える場合はカードに --card-img を指定するだけでよい
    ========================================================= */
 
-/* ---- 01枠：線と点のネットワーク（背景いっぱい） ---- */
-.stmt-bg { position: absolute; z-index: -1; inset: 0; overflow: hidden; }
+/* ---- 01枠：線と点のネットワーク（ミニマル化のため非表示） ---- */
+.stmt-bg { display: none; }
+.stmt-bg--off { position: absolute; z-index: -1; inset: 0; overflow: hidden; }
 .stmt-bg svg { width: 100%; height: 100%; }
 .nw-link {
   stroke: #7FE0F0; stroke-width: 1; opacity: .5;
@@ -605,9 +611,11 @@ a.stmt-card { transition: transform .4s var(--ease); }
 
 /* ---- 活動カード：枠全体を背景ビジュアルに ----
    写真を用意した場合は該当カードに style="--card-img:url('assets/xxx.jpg')" を付けるだけで差し替わる */
-.activity-card { background-image: var(--card-img, none); background-size: cover; background-position: center;
-  aspect-ratio: 1 / 1; display: flex; flex-direction: column; justify-content: flex-end; }
-.card-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: .38; }
+.activity-card { background-image: none;
+  aspect-ratio: auto; display: flex; flex-direction: column; justify-content: flex-start; }
+/* 装飾の背景ビジュアル（MBTI色染み出し・カード動画など）はミニマル化のため非表示 */
+.card-bg, .card-wash { display: none !important; }
+.card-bg--off { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: .38; }
 .card-bg > svg { position: absolute; left: 5%; width: 90%; top: 12%; height: auto; }
 .card-bg::after {
   content: ""; position: absolute; inset: 0;
@@ -703,8 +711,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .pg-bars rect { fill: #12A0B8; opacity: .85; }
 
 @media (max-width: 620px) {
-  .activity-card { aspect-ratio: auto; min-height: 500px; }
-  .has-art .mbti-art { height: 58%; top: 3%; }
+  .activity-card { aspect-ratio: auto; min-height: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cv-link { animation: none; stroke-dashoffset: 0; opacity: .45; }
@@ -845,7 +852,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
    ============================================================ */
 html { overflow-x: hidden; overflow-x: clip; }
 @media (max-width: 480px) {
-  .hero-wordmark        { font-size: 17vw; }
+  .hero-wordmark        { font-size: 16vw; }
   .footer-word          { font-size: 16vw; }
   .stmt-card .watermark { font-size: 12vw; }
   .page-hero .en-big    { font-size: clamp(36px, 11vw, 60px); }

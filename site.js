@@ -164,6 +164,7 @@
   (function () {
     var box = document.querySelector(".footer-fall");
     if (!box) return;
+    return; /* ミニマル化: フッターの装飾（昇る四角）は生成しない */
     var rand = function (a, b) { return a + Math.random() * (b - a); };
     var pick = function (a) { return a[(Math.random() * a.length) | 0]; };
     var N = window.innerWidth < 760 ? 12 : 22;
@@ -404,6 +405,7 @@
   (function () {
     var aura = document.querySelector(".hero-aura");
     if (!aura) return;
+    return; /* ミニマル化: ヒーローの装飾（降る四角）は生成しない */
     var rand = function (a, b) { return a + Math.random() * (b - a); };
     var pick = function (arr) { return arr[(Math.random() * arr.length) | 0]; };
     var N = window.innerWidth < 760 ? 26 : 46;
