@@ -14,16 +14,16 @@
 
 ## 主なページ
 
-- [ホーム](https://kokokara-hp.netlify.app/): 団体の理念と全体像
-- [私たちについて](https://kokokara-hp.netlify.app/about.html): 理念・設立背景・団体概要
-- [イベント申込（募集中）](https://kokokara-hp.netlify.app/events.html): 現在募集中の交流イベントと申込
-- [開催済イベント](https://kokokara-hp.netlify.app/events-past.html): 過去の開催実績
-- [運営メンバー](https://kokokara-hp.netlify.app/member.html): 運営体制の紹介
-- [参加者の声](https://kokokara-hp.netlify.app/voice.html): 学生・企業の参加者の声
-- [協賛企業](https://kokokara-hp.netlify.app/sponsors.html): 協賛企業の紹介・協賛募集
-- [メンバー募集](https://kokokara-hp.netlify.app/join.html): 運営メンバーの募集要項
-- [よくある質問](https://kokokara-hp.netlify.app/faq.html): 参加費・服装・ひとり参加・協賛などのFAQ
-- [お知らせ](https://kokokara-hp.netlify.app/news.html): 最新のお知らせ
+- [ホーム](https://kokokara-hp.vercel.app/): 団体の理念と全体像
+- [私たちについて](https://kokokara-hp.vercel.app/about.html): 理念・設立背景・団体概要
+- [イベント申込（募集中）](https://kokokara-hp.vercel.app/events.html): 現在募集中の交流イベントと申込
+- [開催済イベント](https://kokokara-hp.vercel.app/events-past.html): 過去の開催実績
+- [運営メンバー](https://kokokara-hp.vercel.app/member.html): 運営体制の紹介
+- [参加者の声](https://kokokara-hp.vercel.app/voice.html): 学生・企業の参加者の声
+- [協賛企業](https://kokokara-hp.vercel.app/sponsors.html): 協賛企業の紹介・協賛募集
+- [メンバー募集](https://kokokara-hp.vercel.app/join.html): 運営メンバーの募集要項
+- [よくある質問](https://kokokara-hp.vercel.app/faq.html): 参加費・服装・ひとり参加・協賛などのFAQ
+- [お知らせ](https://kokokara-hp.vercel.app/news.html): 最新のお知らせ
 
 ## よくある質問（要点）
 

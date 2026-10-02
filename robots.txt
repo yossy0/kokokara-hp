@@ -19,4 +19,4 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
-Sitemap: https://kokokara-hp.netlify.app/sitemap.xml
+Sitemap: https://kokokara-hp.vercel.app/sitemap.xml
