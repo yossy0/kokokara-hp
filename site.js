@@ -308,6 +308,11 @@
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
       });
     }
+    function fmtDate(s) {
+      var d = new Date(s); if (isNaN(d)) return "";
+      var w = ["日", "月", "火", "水", "木", "金", "土"];
+      return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日（" + w[d.getDay()] + "）";
+    }
     function renderPreview(list) {
       var today = new Date(); today.setHours(0, 0, 0, 0);
       var up = (Array.isArray(list) ? list : [])
@@ -322,9 +327,22 @@
       box.classList.remove("is-empty");
       box.innerHTML = up.map(function (e, i) {
         var img = e.posterUrl || e.poster || e.square || "";
-        var name = e.name || e.title || "イベントポスター";
-        return '<a href="events.html" class="reveal d' + (i + 1) + ' in">' +
-               '<img src="' + esc(img) + '" alt="' + esc(name) + '" loading="lazy" /></a>';
+        var name = e.name || e.title || "イベント";
+        var cls = "reveal d" + (i + 1) + " in";
+        if (img) {
+          return '<a href="events.html" class="' + cls + '">' +
+                 '<img src="' + esc(img) + '" alt="' + esc(name) + '" loading="lazy" /></a>';
+        }
+        // ポスター画像が無い場合は、詳細（名称・日時）を見やすいテキストカードで表示
+        var emoji = e.emoji ? e.emoji + " " : "";
+        var when = e.dateLabel || fmtDate(e.date);
+        var badge = (e.status === "締切") ? "🔒 締切" : "🔥 募集中";
+        return '<a href="events.html" class="ev-text ' + cls + '">' +
+               '<span class="ev-badge">' + esc(badge) + '</span>' +
+               '<h3 class="ev-name">' + esc(emoji + name) + '</h3>' +
+               (when ? '<span class="ev-date">' + esc(when) + '</span>' : '') +
+               '<span class="ev-go">詳細・申込へ <span class="arrow">→</span></span>' +
+               '</a>';
       }).join("");
     }
     var cbName = "__cocokaraHomeEvents_" + Math.floor(Math.random() * 1e9);
@@ -366,6 +384,11 @@
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
       });
     }
+    function fmtDate(s) {
+      var d = new Date(s); if (isNaN(d)) return "";
+      var w = ["日", "月", "火", "水", "木", "金", "土"];
+      return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日（" + w[d.getDay()] + "）";
+    }
     function emptyNotice() {
       box.classList.remove("events-grid");
       box.innerHTML = '<div class="notice-box reveal in"><span class="notice-badge">Past Events</span>' +
@@ -381,10 +404,14 @@
       box.innerHTML = past.map(function (e, i) {
         var title = (e.emoji ? e.emoji + " " : "") + esc(e.title || "イベント");
         var img = e.square || e.poster || "";
-        return '<article class="event-card reveal in d' + ((i % 4) + 1) + '">' +
+        var when = e.dateLabel || fmtDate(e.date);
+        var media = img
+          ? '<img class="event-poster" src="' + esc(img) + '" alt="' + esc(e.title || "イベントポスター") + '" loading="lazy" />'
+          : (when ? '<span class="event-when">' + esc(when) + '</span>' : '');
+        return '<article class="event-card reveal in d' + ((i % 4) + 1) + (img ? '' : ' event-card--noimg') + '">' +
           '<span class="event-status event-status--done">開催済</span>' +
           '<h2 class="event-title">' + title + '</h2>' +
-          '<img class="event-poster" src="' + esc(img) + '" alt="' + esc(e.title || "イベントポスター") + '" loading="lazy" /></article>';
+          media + '</article>';
       }).join("");
     }
     fetch("events.json", { cache: "no-store" })

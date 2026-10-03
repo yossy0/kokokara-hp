@@ -403,6 +403,26 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .event-preview a:hover::after { opacity: 1; transform: translateY(0); }
 .event-preview-cta { margin-top: 36px; text-align: center; }
 
+/* ---- イベントプレビュー：ポスター画像が無い場合の詳細テキストカード ---- */
+.event-preview a.ev-text {
+  aspect-ratio: auto; min-height: clamp(210px, 26vw, 264px);
+  display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  padding: clamp(26px, 3.4vw, 42px);
+  background: linear-gradient(158deg, rgba(14,124,139,.06) 0%, rgba(14,124,139,0) 58%), var(--panel);
+  transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
+}
+.event-preview a.ev-text::after { display: none; }
+.event-preview a.ev-text:hover { transform: translateY(-4px); box-shadow: 0 16px 38px rgba(14,60,70,.12); border-color: rgba(14,124,139,.35); }
+.ev-text .ev-badge { align-self: flex-start; font-family: var(--font-jp); font-weight: 900; font-size: 12.5px; color: #fff; background: var(--grad); padding: 6px 14px; border-radius: 100px; line-height: 1; }
+.ev-text .ev-name { font-family: var(--font-jp); font-weight: 900; font-size: clamp(20px, 2.6vw, 28px); line-height: 1.35; color: var(--text); }
+.ev-text .ev-date { font-family: var(--font-jp); font-weight: 700; font-size: 14.5px; color: var(--text-70); }
+.ev-text .ev-go { margin-top: 4px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-en); font-weight: 800; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.event-preview a.ev-text:hover .ev-go { gap: 12px; }
+
+/* ---- 開催済カード：ポスター画像が無い場合 ---- */
+.event-card--noimg { justify-content: flex-start; }
+.event-card--noimg .event-when { display: inline-block; margin-top: 6px; font-family: var(--font-jp); font-weight: 700; font-size: 14.5px; color: var(--text-70); }
+
 /* ---------- MEMBERS（04） ---------- */
 .members { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 2.4vw, 30px); }
 .member-card { border: 1px solid var(--line); border-radius: 26px; padding: clamp(28px, 3vw, 44px); text-align: center; transition: transform .4s var(--ease), border-color .4s var(--ease); background: var(--panel); }
