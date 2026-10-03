@@ -256,6 +256,48 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
   -webkit-mask-image: radial-gradient(72% 62% at 50% 38%, #000 0%, transparent 78%);
   mask-image: radial-gradient(72% 62% at 50% 38%, #000 0%, transparent 78%);
 }
+
+/* =========================================================
+   ヒーロー演出：オーロラ背景（C）＋ 登場リビール（A）
+   ========================================================= */
+/* ---- C. オーロラ・ドリフト（淡い光がゆっくり漂う） ---- */
+.hero-aura .aura-blob {
+  position: absolute; border-radius: 50%; filter: blur(44px);
+  will-change: transform; pointer-events: none; z-index: 0;
+}
+.hero-aura .aura-blob.b1 { width: 48vmax; height: 48vmax; left: -8%; top: -16%;
+  background: radial-gradient(circle, rgba(14,124,139,.26) 0%, rgba(14,124,139,0) 68%); animation: auroraDrift1 22s ease-in-out infinite; }
+.hero-aura .aura-blob.b2 { width: 42vmax; height: 42vmax; right: -10%; top: -8%;
+  background: radial-gradient(circle, rgba(79,168,232,.22) 0%, rgba(79,168,232,0) 68%); animation: auroraDrift2 28s ease-in-out infinite; }
+.hero-aura .aura-blob.b3 { width: 40vmax; height: 40vmax; left: 22%; bottom: -26%;
+  background: radial-gradient(circle, rgba(63,203,168,.22) 0%, rgba(63,203,168,0) 68%); animation: auroraDrift3 25s ease-in-out infinite; }
+.hero-aura .aura-blob.b4 { width: 34vmax; height: 34vmax; right: 14%; bottom: -20%;
+  background: radial-gradient(circle, rgba(126,157,232,.18) 0%, rgba(126,157,232,0) 68%); animation: auroraDrift1 31s ease-in-out infinite reverse; }
+@keyframes auroraDrift1 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(14vw,9vh,0) scale(1.18); } }
+@keyframes auroraDrift2 { 0%,100% { transform: translate3d(0,0,0) scale(1.06); } 50% { transform: translate3d(-12vw,11vh,0) scale(.9); } }
+@keyframes auroraDrift3 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(10vw,-13vh,0) scale(1.2); } }
+
+/* ---- A. 登場リビール（文字が迫り上がる／しっかり魅せる） ---- */
+.hero-wordmark .ch {
+  display: inline-block;
+  opacity: 0; transform: translateY(96%) scale(.94); filter: blur(14px);
+  animation: heroChRise 1.05s var(--ease) forwards;
+  animation-delay: calc(.2s + var(--i) * .085s);
+}
+.hero-wordmark .ch:empty { width: .22em; }
+@keyframes heroChRise { to { opacity: 1; transform: none; filter: blur(0); } }
+.hero-tagline { opacity: 0; transform: translateY(20px); animation: heroFadeUp 1s var(--ease) 1.0s forwards; }
+.hero-actions { opacity: 0; transform: translateY(20px); animation: heroFadeUp 1s var(--ease) 1.2s forwards; }
+.hero-marks { opacity: 0; animation: heroFadeIn 1.2s var(--ease) 1.4s forwards; }
+.hero-scroll { opacity: 0; animation: heroFadeIn 1.2s var(--ease) 1.5s forwards; }
+@keyframes heroFadeUp { to { opacity: 1; transform: none; } }
+@keyframes heroFadeIn { to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aura .aura-blob { animation: none; }
+  .hero-wordmark .ch { opacity: 1; transform: none; filter: none; animation: none; }
+  .hero-tagline, .hero-actions, .hero-marks, .hero-scroll { opacity: 1; transform: none; animation: none; }
+}
 /* 旧・降る四角／オーラ／さざ波は非表示（ミニマル化） */
 .fall-chip, .hero-aura span, .hero-aura i { display: none !important; }
 .fall-chip {
