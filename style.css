@@ -1,25 +1,27 @@
 /* =========================================================
-   学生団体ココカラ 公式サイト v7
-   ミニマル基調（モノトーン × ティール1アクセント）
-   Base #FFFFFF / Text #14171A / Accent #0E7C8B（控えめ運用）
-   ※ v6 の構造・クラス名は維持。配色と装飾トーンのみ刷新。
+   学生団体ココカラ 公式サイト v9
+   明るい上質基調（ウォームホワイト × ディープ・ティール）
+   Base #FBFCFD / Text #16191D / Accent #0E7C8B
+   ※ v6〜v8 の構造・クラス名は維持。配色と装飾トーンのみ刷新。
    ========================================================= */
 
 :root {
-  --bg: #FFFFFF;
-  --bg-2: #F6F7F8;
+  --bg: #FBFCFD;
+  --bg-2: #F3F6F7;
   --panel: #FFFFFF;
-  --panel-2: #F0F1F2;
-  --text: #14171A;
-  --text-70: rgba(20, 23, 26, 0.62);
-  --text-45: rgba(20, 23, 26, 0.42);
-  --line: rgba(20, 23, 26, 0.10);
-  --line-2: rgba(20, 23, 26, 0.18);
+  --panel-2: #EEF1F3;
+  --text: #16191D;
+  --text-70: rgba(22, 25, 29, 0.64);
+  --text-45: rgba(22, 25, 29, 0.42);
+  --line: rgba(22, 25, 29, 0.10);
+  --line-2: rgba(22, 25, 29, 0.18);
   --accent: #0E7C8B;
+  --accent-soft: #0A5D6B;
   --amber: #0E7C8B;
-  --grad: linear-gradient(0deg, #14171A 0%, #14171A 100%);
-  --ink: #14171A;
+  --grad: linear-gradient(135deg, #12A0B8 0%, #0A5D6B 100%);
+  --ink: #16191D;
   --on-accent: #FFFFFF;
+  --glow: 0 24px 60px rgba(14, 60, 70, 0.14);
   --max: 1320px;
   --pad: clamp(20px, 5vw, 92px);
   --header-h: 100px;
@@ -46,7 +48,7 @@ a { color: inherit; text-decoration: none; }
 body::before {
   content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  opacity: 0.025; mix-blend-mode: multiply;
+  opacity: 0.03; mix-blend-mode: multiply;
 }
 
 /* =========================================================
@@ -59,7 +61,7 @@ body::before {
 }
 .site-header.scrolled {
   background: rgba(255, 255, 255, 0.80);
-  backdrop-filter: saturate(160%) blur(14px); -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(16px); -webkit-backdrop-filter: saturate(160%) blur(16px);
   border-bottom-color: var(--line);
 }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -130,7 +132,7 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 .btn {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-jp); font-weight: 700; font-size: 15px; letter-spacing: .02em;
-  color: #fff; background: var(--ink);
+  color: var(--on-accent); background: var(--ink);
   padding: 15px 27px; border-radius: 100px; border: 1px solid var(--ink);
   transition: transform .3s var(--ease), background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
   box-shadow: none;
@@ -218,7 +220,7 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 .hero-center { position: relative; z-index: 3; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .hero-wordmark { font-family: var(--font-en); font-weight: 900; font-style: italic; letter-spacing: -.035em; font-size: clamp(60px, 15.5vw, 260px); line-height: .82; color: var(--text); white-space: nowrap; position: relative; z-index: 1; }
 .hero-tagline { position: relative; z-index: 3; margin-top: clamp(16px, 2.6vh, 30px); font-family: var(--font-jp); font-weight: 700; font-size: clamp(15px, 2.1vw, 23px); letter-spacing: .04em; }
-.hero-tagline .accent { color: #053C48; }
+.hero-tagline .accent { color: var(--accent); }
 
 /* 背面の色水が濃いときは文字を白へ自動反転（JSが on-dark を付与） */
 .hero-wordmark, .hero-tagline { transition: color .5s var(--ease); }
@@ -234,11 +236,25 @@ body.menu-open .menu-list li:nth-child(10) a { transition-delay: .42s; }
 
 .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%; z-index: 2; pointer-events: none; background: linear-gradient(to top, var(--bg) 12%, rgba(255,255,255,0) 100%); }
 
-/* ---- ヒーロー背景：ミニマル（装飾の四角は廃止し、静かな無地に） ---- */
+/* ---- ヒーロー背景：明るい上質（ウォームホワイト＋淡いアクセントの光） ---- */
 .hero-aura {
   position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  overflow: hidden; background: #FBFBFC;
-  transition: none;
+  overflow: hidden; transition: none;
+  background:
+    radial-gradient(60% 52% at 50% -10%, rgba(14, 124, 139, 0.10) 0%, rgba(14, 124, 139, 0) 60%),
+    radial-gradient(42% 42% at 84% 20%, rgba(79, 168, 232, 0.08) 0%, rgba(79, 168, 232, 0) 58%),
+    radial-gradient(46% 46% at 12% 80%, rgba(63, 203, 168, 0.08) 0%, rgba(63, 203, 168, 0) 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #F6FAFB 100%);
+}
+/* 繊細なグリッド（上質感） */
+.hero-aura::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(22, 25, 29, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 25, 29, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 38%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(72% 62% at 50% 38%, #000 0%, transparent 78%);
 }
 /* 旧・降る四角／オーラ／さざ波は非表示（ミニマル化） */
 .fall-chip, .hero-aura span, .hero-aura i { display: none !important; }
@@ -369,7 +385,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 /* ---------- ACTIVITY（02） ---------- */
 .activities { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(18px, 2.4vw, 32px); }
 .activity-card { background: var(--panel); border: 1px solid var(--line); border-radius: 26px; padding: clamp(28px, 3.6vw, 48px); position: relative; overflow: hidden; transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease); }
-.activity-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(20,23,26,.07); border-color: var(--line-2); }
+.activity-card:hover { transform: translateY(-4px); box-shadow: 0 16px 38px rgba(14,60,70,.12); border-color: rgba(14,124,139,.35); }
 .activity-num { font-family: var(--font-en); font-weight: 900; font-size: clamp(56px, 8vw, 104px); line-height: .9; letter-spacing: -.04em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; display: block; margin-bottom: 12px; }
 .activity-badge { display: inline-block; font-family: var(--font-en); font-weight: 800; font-size: 11.5px; letter-spacing: .1em; color: var(--text); border: 1px solid var(--line-2); border-radius: 100px; padding: 5px 13px; margin-bottom: 16px; text-transform: uppercase; }
 .activity-card h3 { font-family: var(--font-jp); font-weight: 900; font-size: clamp(22px, 2.7vw, 31px); margin-bottom: 14px; }
@@ -397,15 +413,15 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .member-name { font-family: var(--font-jp); font-weight: 900; font-size: 20px; margin-top: 8px; }
 
 /* ---------- 協賛CTA（05）── 鮮やかオレンジのバンド ---------- */
-.cta-band { background: #000; color: var(--on-accent); border-radius: 32px; padding: clamp(40px, 6vw, 84px); position: relative; overflow: hidden; min-height: clamp(300px, 40vw, 440px); }
+.cta-band { background: radial-gradient(120% 150% at 85% 0%, rgba(120,230,240,.22) 0%, rgba(120,230,240,0) 48%), linear-gradient(155deg, #0E6C7A 0%, #063C47 100%); color: #F2FBFC; border: 1px solid rgba(255,255,255,.14); border-radius: 32px; padding: clamp(40px, 6vw, 84px); position: relative; overflow: hidden; min-height: clamp(300px, 40vw, 440px); box-shadow: var(--glow); }
 .cta-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
 .cta-band::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(90deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.55) 34%, rgba(0,0,0,.22) 62%, rgba(0,0,0,0) 84%); }
+  background: linear-gradient(90deg, rgba(4,40,47,.42) 0%, rgba(4,40,47,.22) 38%, rgba(4,40,47,0) 70%); }
 .cta-eyebrow { position: relative; font-family: var(--font-en); font-weight: 800; font-size: 12px; letter-spacing: .16em; color: rgba(255,255,255,.78); text-transform: uppercase; }
 .cta-band h2 { position: relative; font-family: var(--font-jp); font-weight: 900; font-size: clamp(26px, 3.8vw, 46px); line-height: 1.3; margin: 16px 0 18px; }
 .cta-band p { position: relative; color: rgba(255,255,255,.88); max-width: 640px; margin-bottom: 30px; }
-.cta-band .btn { background: var(--bg); color: var(--text); box-shadow: none; }
-.cta-band .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(6,50,60,.28); }
+.cta-band .btn { background: #fff; color: var(--text); border-color: #fff; box-shadow: none; }
+.cta-band .btn:hover { background: transparent; color: #fff; border-color: rgba(255,255,255,.6); transform: translateY(-2px); }
 
 /* ---------- CONTACT（06） ---------- */
 .contact { text-align: center; }
@@ -432,7 +448,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .events-section { padding-top: 0; }
 .events-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: clamp(20px, 3vw, 36px); }
 .event-card { border: 1px solid var(--line); border-radius: 26px; padding: clamp(22px, 3vw, 34px); background: var(--panel); transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s; display: flex; flex-direction: column; }
-.event-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(20,23,26,.07); border-color: var(--line-2); }
+.event-card:hover { transform: translateY(-4px); box-shadow: 0 16px 38px rgba(14,60,70,.12); border-color: rgba(14,124,139,.35); }
 .event-status { align-self: flex-start; font-family: var(--font-jp); font-weight: 900; font-size: 13px; color: #fff; background: var(--grad); padding: 7px 15px; border-radius: 100px; margin-bottom: 18px; }
 .event-status--done { background: #64748b; }
 .event-title { font-family: var(--font-jp); font-weight: 900; font-size: clamp(21px, 2.6vw, 28px); margin-bottom: 18px; }
