@@ -238,7 +238,9 @@
         ? '<img class="event-poster" src="'+esc(e.posterUrl)+'" alt="'+esc(e.dateLabel+" "+e.name)+' ポスター" loading="lazy" />'
         : '';
       var applyBtn = e.applyUrl
-        ? '<a class="btn event-apply" href="'+esc(e.applyUrl)+'" target="_blank" rel="noopener">参加申込フォームはこちら <span class="arrow">→</span></a>'
+        ? '<a class="btn event-apply" href="https://line.me/R/ti/p/@113crihp" target="_blank" rel="noopener">公式LINEで申し込む <span class="arrow">→</span></a>'
+          + '<p style="font-size:.78rem;line-height:1.6;color:#6b7a6b;margin:.55rem .2rem 0;text-align:center;">友だち追加後、トークで「イベント申込」と送ると、あなた専用の申込リンクが届きます。</p>'
+          + '<a href="'+esc(e.applyUrl)+'" target="_blank" rel="noopener" style="display:block;font-size:.72rem;color:#9a9aa2;text-align:center;margin-top:.3rem;text-decoration:underline;">LINEを使わない方はこちら（申込フォーム）</a>'
         : '<span class="btn event-apply" style="opacity:.5;pointer-events:none;">申込フォーム準備中</span>';
       var head = '<div class="event-head">'
         + '<h2 class="event-title">'+esc(e.name)+'</h2>'

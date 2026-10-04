@@ -11,8 +11,8 @@
   --panel: #FFFFFF;
   --panel-2: #EEF1F3;
   --text: #16191D;
-  --text-70: rgba(22, 25, 29, 0.64);
-  --text-45: rgba(22, 25, 29, 0.42);
+  --text-70: rgba(22, 25, 29, 0.82);
+  --text-45: rgba(22, 25, 29, 0.56);
   --line: rgba(22, 25, 29, 0.10);
   --line-2: rgba(22, 25, 29, 0.18);
   --accent: #0E7C8B;
@@ -479,9 +479,9 @@ a.stmt-card { transition: transform .4s var(--ease); }
 .cta-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
 .cta-band::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(90deg, rgba(4,40,47,.42) 0%, rgba(4,40,47,.22) 38%, rgba(4,40,47,0) 70%); }
-.cta-eyebrow { position: relative; font-family: var(--font-en); font-weight: 800; font-size: 12px; letter-spacing: .16em; color: rgba(255,255,255,.78); text-transform: uppercase; }
-.cta-band h2 { position: relative; font-family: var(--font-jp); font-weight: 900; font-size: clamp(26px, 3.8vw, 46px); line-height: 1.3; margin: 16px 0 18px; }
-.cta-band p { position: relative; color: rgba(255,255,255,.88); max-width: 640px; margin-bottom: 30px; }
+.cta-eyebrow { position: relative; font-family: var(--font-en); font-weight: 800; font-size: 12px; letter-spacing: .16em; color: #9FF0FB; text-transform: uppercase; }
+.cta-band h2 { position: relative; color: #FFFFFF; font-family: var(--font-jp); font-weight: 900; font-size: clamp(26px, 3.8vw, 46px); line-height: 1.3; margin: 16px 0 18px; }
+.cta-band p { position: relative; color: rgba(255,255,255,.95); max-width: 640px; margin-bottom: 30px; }
 .cta-band .btn { background: #fff; color: var(--text); border-color: #fff; box-shadow: none; }
 .cta-band .btn:hover { background: transparent; color: #fff; border-color: rgba(255,255,255,.6); transform: translateY(-2px); }
 
@@ -561,7 +561,7 @@ a.stmt-card { transition: transform .4s var(--ease); }
    ========================================================= */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .reveal.in { opacity: 1; transform: none; }
-.reveal.d1 { transition-delay: .08s; } .reveal.d2 { transition-delay: .16s; } .reveal.d3 { transition-delay: .24s; }
+.reveal.d1 { transition-delay: .08s; } .reveal.d2 { transition-delay: .16s; } .reveal.d3 { transition-delay: .24s; } .reveal.d4 { transition-delay: .32s; }
 
 /* =========================================================
    レスポンシブ
