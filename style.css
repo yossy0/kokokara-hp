@@ -609,6 +609,19 @@ a.stmt-card { transition: transform .4s var(--ease); }
   overflow-wrap: break-word;
   text-wrap: balance;
 }
+/* 本文の日本語を「文節」で自然に折り返す（対応ブラウザ）。
+   非対応ブラウザは従来の折り返しにフォールバック。
+   「公式LINEから」のような語の途中での不自然な改行を防ぐ。 */
+.sec-lead, .page-hero p,
+.statement-copy p, .activity-card p, .notice-box p, .recruit p,
+.cta-band p, .contact-card p, .member-note, .event-when,
+.faq-a p, .legal p, .news-item p, .info-table dd, .meishi-info dd,
+.modal-panel p, .event-empty, .ev-text .ev-date {
+  word-break: auto-phrase;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  line-break: strict;
+}
 
 /* =========================================================
    追加: 活動カード → クリックで詳細（アフォーダンス）
@@ -938,3 +951,22 @@ html { overflow-x: hidden; overflow-x: clip; }
   .activity-num         { font-size: clamp(42px, 11vw, 70px); }
   .brand-name           { white-space: nowrap; }
 }
+
+/* =========================================================
+   追加: 参加者の声 フォーム（Googleフォーム埋め込み）
+   「声を届ける」ボタンでその場に展開。btn見た目を summary に流用。
+   ========================================================= */
+.voice-form-details { margin-top: 6px; }
+.voice-form-details summary { list-style: none; cursor: pointer; }
+.voice-form-details summary::-webkit-details-marker { display: none; }
+.voice-form-summary { display: inline-flex; }
+.voice-form-details[open] .voice-form-summary { background: transparent; color: var(--ink); }
+.voice-form-details[open] .voice-form-summary .arrow { transform: rotate(90deg); }
+.voice-form { margin-top: 28px; text-align: center; animation: mrise .4s var(--ease); }
+.voice-form iframe {
+  width: 100%; max-width: 680px; height: clamp(760px, 118vh, 1180px);
+  margin: 0 auto; display: block;
+  border: 1px solid var(--line); border-radius: 18px; background: var(--panel);
+}
+.voice-form-fallback { margin-top: 16px; font-size: 13.5px; color: var(--text-70); }
+.voice-form-fallback a { color: var(--accent); font-weight: 700; border-bottom: 1px solid var(--line-2); }
