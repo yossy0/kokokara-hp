@@ -233,7 +233,8 @@
   // ===== URLパラメータ =====
   const params = new URLSearchParams(window.location.search);
   const sessionToken = params.get('session');
-  const apiUrl = params.get('api');
+  const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbznc0dICsGVCcRx9nWc_ZJGVRBqb39G26IHRNZax7gp_ZYoa-wE2Ripgglyea68FaZ7/exec';
+  const apiUrl = params.get('api') || DEFAULT_API_URL;
 
   function showInvalid(title, message) {
     document.getElementById('screen-loading').classList.add('hidden');
