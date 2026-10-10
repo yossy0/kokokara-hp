@@ -2,6 +2,8 @@
 (function () {
   "use strict";
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* GAS Web App の /exec（events.html と同じデプロイ）。差し替えるときはここだけ */
+  var GAS_EXEC_URL = "https://script.google.com/macros/s/AKfycbznc0dICsGVCcRx9nWc_ZJGVRBqb39G26IHRNZax7gp_ZYoa-wE2Ripgglyea68FaZ7/exec";
 
   /* ---- ヘッダー: スクロールで背景 ---- */
   var header = document.querySelector(".site-header");
@@ -301,7 +303,6 @@
     // HOMEのイベントプレビュー：GAS(public_events)から動的取得（events.htmlと同じSSOT）
     var box = document.querySelector("[data-event-preview]");
     if (!box) return;
-    var GAS_EXEC_URL = "https://script.google.com/macros/s/AKfycbznc0dICsGVCcRx9nWc_ZJGVRBqb39G26IHRNZax7gp_ZYoa-wE2Ripgglyea68FaZ7/exec";
     var LIMIT = parseInt(box.getAttribute("data-limit") || "2", 10);
     function esc(s) {
       return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -354,6 +355,78 @@
     var s = document.createElement("script");
     s.src = GAS_EXEC_URL + "?action=public_events&callback=" + cbName;
     s.onerror = function () { /* 取得失敗時はHTMLの静的フォールバックを維持 */ };
+    document.body.appendChild(s);
+  })();
+
+  /* ---- VOICEページ：参加者の声（GAS public_voices を JSONP で取得） ---- */
+  (function () {
+    var box = document.querySelector("[data-voices]");
+    if (!box) return;
+    function str(v) { return String(v == null ? "" : v).trim(); }
+    function addMeta(meta, cls, value) {
+      if (!value) return;
+      var span = document.createElement("span");
+      span.className = cls;
+      span.textContent = value;
+      meta.appendChild(span);
+    }
+    function renderVoices(list) {
+      var cards = [];
+      for (var i = 0; i < list.length && cards.length < 50; i++) {
+        var v = list[i] || {};
+        var comment = str(v.comment);
+        if (!comment) continue;
+        var card = document.createElement("article");
+        card.className = "voice-card reveal in d" + ((i % 3) + 1);
+        var rating = parseInt(str(v.rating), 10);
+        if (rating >= 1 && rating <= 5) {
+          var stars = document.createElement("span");
+          stars.className = "voice-stars";
+          stars.setAttribute("role", "img");
+          stars.setAttribute("aria-label", "満足度 " + rating + "（5段階）");
+          var on = document.createElement("span");
+          on.className = "voice-star-on";
+          on.setAttribute("aria-hidden", "true");
+          on.textContent = new Array(rating + 1).join("★");
+          stars.appendChild(on);
+          if (rating < 5) {
+            var off = document.createElement("span");
+            off.className = "voice-star-off";
+            off.setAttribute("aria-hidden", "true");
+            off.textContent = new Array(6 - rating).join("★");
+            stars.appendChild(off);
+          }
+          card.appendChild(stars);
+        }
+        var text = document.createElement("p");
+        text.className = "voice-comment";
+        text.textContent = comment;
+        card.appendChild(text);
+        var meta = document.createElement("p");
+        meta.className = "voice-meta";
+        var eventName = str(v.eventName);
+        var month = /^(\d{4})-(\d{2})$/.exec(str(v.month));
+        var who = [str(v.university), str(v.grade)].filter(function (s) { return s !== ""; }).join(" ");
+        addMeta(meta, "voice-event", eventName);
+        addMeta(meta, "voice-month", month ? month[1] + "年" + parseInt(month[2], 10) + "月" : "");
+        addMeta(meta, "voice-who", who);
+        card.appendChild(meta);
+        cards.push(card);
+      }
+      if (cards.length) {
+        box.textContent = "";
+        cards.forEach(function (card) { box.appendChild(card); });
+      }
+    }
+    var cbName = "__kokokaraVoices_" + Math.floor(Math.random() * 1e9);
+    window[cbName] = function (data) {
+      try { if (data && Array.isArray(data.voices)) renderVoices(data.voices); }
+      catch (e) { /* 静的フォールバックを維持 */ }
+      delete window[cbName];
+    };
+    var s = document.createElement("script");
+    s.src = GAS_EXEC_URL + "?action=public_voices&callback=" + cbName;
+    s.onerror = function () { /* 静的フォールバックを維持 */ };
     document.body.appendChild(s);
   })();
 
