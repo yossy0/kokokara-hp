@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="robots" content="noindex, nofollow" />
+<title>学生団体ココカラ QR受付</title>
+<style>
+  :root {
+    --bg-start: #F5EFE0;
+    --bg-end: #e8dcc4;
+    --primary: #10162C;
+    --primary-dark: #050a1e;
+    --accent: #C9A96A;
+    --text: #10162C;
+    --text-muted: #6c6c6c;
+    --success: #2e7d32;
+    --success-bg: #e8f5e9;
+    --warning: #b65800;
+    --warning-bg: #fff3e0;
+    --error: #c62828;
+    --error-bg: #ffebee;
+    --info: #1565c0;
+    --info-bg: #e3f2fd;
+    --card-bg: rgba(255, 255, 255, 0.96);
+    --border: #d4c8a8;
+    --shadow: 0 8px 24px rgba(16,22,44,0.10);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    min-height: 100vh;
+    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, system-ui, sans-serif;
+    color: var(--text);
+    line-height: 1.5;
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 14px; padding-bottom: 36px; max-width: 560px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 14px; }
+  header .title { font-size: 19px; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; }
+  header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .card h2 { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 8px; }
+  .event-info { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+  .event-info .label { color: var(--text-muted); }
+  .event-info .value { font-weight: 600; }
+  .event-buttons { display: flex; flex-direction: column; gap: 8px; }
+  .event-btn {
+    background: #fff; border: 2px solid var(--primary); color: var(--primary);
+    border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 600;
+    cursor: pointer; text-align: left; font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .event-btn:hover, .event-btn:focus { background: var(--primary); color: var(--bg-start); }
+  .event-btn.selected { background: var(--primary); color: var(--bg-start); }
+  #reader { width: 100%; background: #000; border-radius: 12px; overflow: hidden; min-height: 240px; }
+  #reader video, #reader img { border-radius: 12px; }
+  .scanner-card { padding: 12px; }
+  .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    flex: 1; min-width: 110px;
+    background: var(--primary); color: var(--bg-start);
+    border: none; border-radius: 10px; padding: 11px 14px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s ease; font-family: inherit;
+  }
+  button:disabled { background: #b8b8b8; cursor: not-allowed; }
+  button:active:not(:disabled) { background: var(--primary-dark); }
+  button.secondary { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+  button.secondary:active:not(:disabled) { background: #f3efe3; }
+  button.accent { background: var(--accent); color: var(--primary); }
+  .result-area { min-height: 0; margin-top: 10px; }
+  .result-area:empty { display: none; }
+  .result {
+    border-radius: 10px; padding: 14px; margin-bottom: 8px;
+    font-size: 14px; animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn { from { transform: translateY(-6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .result.success { background: var(--success-bg); border-left: 4px solid var(--success); }
+  .result.duplicate { background: var(--warning-bg); border-left: 4px solid var(--warning); }
+  .result.error { background: var(--error-bg); border-left: 4px solid var(--error); }
+  .result.info { background: var(--info-bg); border-left: 4px solid var(--info); }
+  .result .head { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .result.success .head { color: var(--success); }
+  .result.duplicate .head { color: var(--warning); }
+  .result.error .head { color: var(--error); }
+  .result.info .head { color: var(--info); }
+  .result .body { font-size: 13px; color: var(--text); }
+  .result .pay { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pay-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .pay-badge.plus { background: var(--accent); color: var(--primary); }
+  .pay-badge.paid { background: var(--success); color: #fff; }
+  .pay-badge.unpaid { background: var(--error); color: #fff; }
+  .pay-badge.norecord { background: #e0e0e0; color: var(--text-muted); }
+  .pay-badge.sub-ok { background: #00838f; color: #fff; }
+  .pay-badge.free { background: #607d8b; color: #fff; }
+  .pay-badge.earlybird { background: #ff8f00; color: #fff; }
+  .pay-badge.no-earlybird { background: #f5f5f5; color: var(--text-muted); border: 1px dashed var(--border); }
+  .result .meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .stats { display: flex; gap: 8px; margin-bottom: 8px; }
+  .stat { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat .num { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1.2; }
+  .stat .label { font-size: 11px; color: var(--text-muted); }
+  .history { max-height: 240px; overflow-y: auto; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; }
+  .history .item { display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px dashed #ddd; font-size: 12px; }
+  .history .item:last-child { border-bottom: none; }
+  .history .name { font-weight: 600; }
+  .history .time { color: var(--text-muted); font-size: 11px; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+  .badge.ok { background: var(--success-bg); color: var(--success); }
+  .badge.dup { background: var(--warning-bg); color: var(--warning); }
+  .badge.err { background: var(--error-bg); color: var(--error); }
+  .invalid-screen { text-align: center; padding: 40px 20px; }
+  .invalid-screen .icon { font-size: 48px; margin-bottom: 12px; }
+  .invalid-screen h1 { font-size: 18px; color: var(--error); margin: 0 0 12px; }
+  .invalid-screen p { font-size: 13px; color: var(--text-muted); margin: 8px 0; }
+  .loading { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+  .spinner {
+    display: inline-block; width: 28px; height: 28px;
+    border: 3px solid #e0d8c0; border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  footer { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 16px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-top: 8px; }
+  .toggle-row label { color: var(--text-muted); }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+  .hidden { display: none !important; }
+  #scanner-controls:not(:has(button:not(.hidden))) { display: none; }
+  #reader__dashboard_section_csr button {
+    background: #fff !important; color: var(--primary) !important;
+    border: 1.5px solid var(--primary) !important;
+    margin: 4px !important; padding: 8px 12px !important; font-size: 13px !important;
+  }
+  #reader__dashboard_section_swaplink { color: var(--primary) !important; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- 起動時ローディング -->
+<div id="screen-loading" class="card">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>セッションを確認中...</div>
+  </div>
+</div>
+
+<!-- リンク無効 -->
+<div id="screen-invalid" class="card hidden">
+  <div class="invalid-screen">
+    <div class="icon">⚠️</div>
+    <h1 id="invalid-title">リンクが無効です</h1>
+    <p id="invalid-message">URLが正しくありません。公式LINEで「QR読み取り」と送信してリンクを再発行してください。</p>
+  </div>
+</div>
+
+<!-- イベント選択画面（複数イベントがある日のみ） -->
+<div id="screen-event-select" class="hidden">
+  <header>
+    <div class="title">学生団体ココカラ QR受付</div>
+    <div class="subtitle">本日のどのイベントを受付しますか？</div>
+  </header>
+  <div class="card">
+    <h2>📅 本日のイベント</h2>
+    <div class="event-buttons" id="event-button-list"></div>
+  </div>
+</div>
+
+<!-- メイン画面 -->
+<div id="screen-main" class="hidden">
+  <header>
+    <div class="title">学生団体ココカラ QR受付</div>
+    <div class="subtitle">メンバーのQRコードをカメラに向けてください</div>
+  </header>
+
+  <div class="card">
+    <h2>📅 受付中のイベント</h2>
+    <div class="event-info">
+      <div class="label">イベント:</div>
+      <div class="value" id="event-name">-</div>
+      <div class="label">イベントID:</div>
+      <div class="value" id="event-id">-</div>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="secondary" id="btn-change-event" style="width:100%;">別のイベントに切り替え</button>
+    </div>
+  </div>
+
+  <div class="card scanner-card">
+    <h2>📷 QRスキャナー</h2>
+    <div id="reader"></div>
+    <div class="result-area" id="latest-result"></div>
+    <div class="controls" id="scanner-controls">
+      <button id="btn-torch" class="secondary hidden">🔦 ライト</button>
+    </div>
+    <div class="toggle-row">
+      <label for="toggle-sound">読み取り音を鳴らす</label>
+      <input type="checkbox" id="toggle-sound" checked />
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 履歴・統計</h2>
+    <div class="stats">
+      <div class="stat">
+        <div class="num" id="stat-ok">0</div>
+        <div class="label">受付完了</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="stat-dup">0</div>
+        <div class="label">重複スキャン</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="stat-err">0</div>
+        <div class="label">エラー</div>
+      </div>
+    </div>
+    <div class="history" id="history"></div>
+  </div>
+
+  <footer>学生団体ココカラ © 2026 | GAS v5 連携</footer>
+</div>
+
+<!-- html5-qrcode CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== URLパラメータ =====
+  const params = new URLSearchParams(window.location.search);
+  const sessionToken = params.get('session');
+  const apiUrl = params.get('api');
+
+  function showInvalid(title, message) {
+    document.getElementById('screen-loading').classList.add('hidden');
+    document.getElementById('screen-main').classList.add('hidden');
+    document.getElementById('screen-event-select').classList.add('hidden');
+    document.getElementById('screen-invalid').classList.remove('hidden');
+    if (title) document.getElementById('invalid-title').textContent = title;
+    if (message) document.getElementById('invalid-message').textContent = message;
+  }
+
+  if (!sessionToken || !apiUrl) {
+    showInvalid('リンクが無効です', 'URLが正しくありません。公式LINEで「QR読み取り」と送信してリンクを再発行してください。');
+    return;
+  }
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(apiUrl)) {
+    showInvalid('リンクが無効です', 'URLが正しくありません。公式LINEで「QR読み取り」と送信してリンクを再発行してください。');
+    return;
+  }
+
+  // ===== 状態 =====
+  let scanner = null;
+  let isPaused = false;
+  let isProcessing = false;
+  let selectedEvent = null;          // { eventId, eventName }
+  let todayEvents = [];
+  const stats = { ok: 0, dup: 0, err: 0 };
+  let lastCode = '';
+  let lastCodeAt = 0;
+
+  // ===== JSONP ヘルパー =====
+  // GASからのレスポンスを script タグでロードしてコールバック経由で受け取る（CORS回避）
+  let jsonpCounter = 0;
+  function jsonp(action, paramsObj, timeoutMs) {
+    timeoutMs = timeoutMs || 15000;
+    return new Promise(function (resolve, reject) {
+      const cbName = '__jsonpCb_' + (++jsonpCounter) + '_' + Date.now();
+      const params = new URLSearchParams();
+      params.set('action', action);
+      Object.keys(paramsObj || {}).forEach(function (k) {
+        if (paramsObj[k] != null) params.set(k, paramsObj[k]);
+      });
+      params.set('callback', cbName);
+      const sep = apiUrl.indexOf('?') >= 0 ? '&' : '?';
+      const fullUrl = apiUrl + sep + params.toString();
+
+      const script = document.createElement('script');
+      let settled = false;
+      const timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('JSONP timeout (' + timeoutMs + 'ms): ' + action));
+      }, timeoutMs);
+
+      function cleanup() {
+        try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+        clearTimeout(timer);
+      }
+
+      window[cbName] = function (resp) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(resp);
+      };
+
+      script.onerror = function () {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('JSONPロード失敗: ' + action));
+      };
+      script.src = fullUrl;
+      document.head.appendChild(script);
+    });
+  }
+
+  // ===== セッション検証 =====
+  function checkSession() {
+    return jsonp('scanner_session_check', { session: sessionToken });
+  }
+
+  // ===== スキャンAPI =====
+  function postScan(token, eventId) {
+    return jsonp('scan_api', {
+      session: sessionToken,
+      token: token,
+      event_id: eventId
+    });
+  }
+
+  // ===== ユーティリティ =====
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  // メンバーQRはURL形式（{deployUrl}?action=record_attendance&token=KSC-xxx-yyy）
+  // または素のトークン (KSC-xxx-yyy) 両方を受け付ける
+  function extractTokenFromQrCode(code) {
+    if (!code) return '';
+    code = String(code).trim();
+    // 1. URL形式の場合 → token= を抽出
+    const m = code.match(/[?&]token=([^&\s]+)/);
+    if (m) {
+      try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+    }
+    // 2. KSC- で始まる素のトークン
+    if (/^KSC-/.test(code)) return code;
+    // 3. それ以外もそのまま返す（API側でinvalid_qrになる）
+    return code;
+  }
+
+  // ===== 結果表示 =====
+  function showResult(type, headText, bodyHtml, payments, timing) {
+    const area = document.getElementById('latest-result');
+    const el = document.createElement('div');
+    el.className = 'result ' + type;
+    let payHtml = '';
+    if (payments && payments.length > 0) {
+      payHtml = '<div class="pay">';
+      payments.forEach(function (p) {
+        payHtml += '<span class="pay-badge ' + escapeHtml(p.cls) + '">' + escapeHtml(p.text) + '</span>';
+      });
+      payHtml += '</div>';
+    }
+    let timingHtml = '';
+    if (timing) {
+      // timing は <br> を含む可能性があるので escape せず差し込む
+      timingHtml = '<div class="meta">' + timing + '</div>';
+    }
+    el.innerHTML =
+      '<div class="head">' + escapeHtml(headText) + '</div>' +
+      '<div class="body">' + bodyHtml + '</div>' +
+      payHtml +
+      timingHtml;
+    area.innerHTML = '';
+    area.appendChild(el);
+  }
+
+  function addHistory(type, name, memberId) {
+    const hist = document.getElementById('history');
+    const now = new Date();
+    const time = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+    const badgeClass = type === 'success' ? 'ok' : (type === 'duplicate' ? 'dup' : 'err');
+    const badgeText = type === 'success' ? '受付' : (type === 'duplicate' ? '重複' : 'エラー');
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML =
+      '<div><span class="name">' + escapeHtml(name || '(不明)') + '</span>' +
+      (memberId ? ' <span style="color:#999;font-size:11px;">' + escapeHtml(memberId) + '</span>' : '') +
+      '<span class="badge ' + badgeClass + '">' + badgeText + '</span></div>' +
+      '<div class="time">' + time + '</div>';
+    hist.insertBefore(item, hist.firstChild);
+    while (hist.children.length > 50) hist.removeChild(hist.lastChild);
+  }
+
+  function updateStats() {
+    document.getElementById('stat-ok').textContent = stats.ok;
+    document.getElementById('stat-dup').textContent = stats.dup;
+    document.getElementById('stat-err').textContent = stats.err;
+  }
+
+  function beep(type) {
+    if (!document.getElementById('toggle-sound').checked) return;
+    try {
+      const ctx = beep._ctx || (beep._ctx = new (window.AudioContext || window.webkitAudioContext)());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      if (type === 'success') osc.frequency.value = 880;
+      else if (type === 'duplicate') osc.frequency.value = 440;
+      else osc.frequency.value = 220;
+      gain.gain.value = 0.08; osc.start();
+      setTimeout(function () { osc.stop(); }, 120);
+    } catch (e) {}
+  }
+
+  function vibrate(pattern) {
+    if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} }
+  }
+
+  // ===== 支払い状態のバッジ生成 =====
+  function buildPaymentBadges(resp) {
+    const list = [];
+
+    // 1. プラン表示（プラス or フリー）
+    if (resp.isPlus) {
+      list.push({ cls: 'plus', text: '✨ フリーパス' });
+    } else {
+      list.push({ cls: 'free', text: 'シングルチケット' });
+    }
+
+    // 2. 支払い状況
+    if (resp.isPlus) {
+      // フリーパスは月額/年額で完済済み → 常に支払い済扱い
+      list.push({ cls: 'paid', text: '💰 支払い済み' });
+    } else {
+      const ps = String(resp.paymentStatus || '');
+      if (ps === '支払い済' || ps === '支払済' || ps.indexOf('済') >= 0) {
+        const amount = resp.paymentAmount ? '（' + resp.paymentAmount + '円）' : '';
+        if (resp.isPrepay) {
+          // Phase 23: 事前決済済み（Stripe で前日に引き落とし済）
+          list.push({ cls: 'paid', text: '💳 事前支払い済み' + amount });
+        } else {
+          list.push({ cls: 'paid', text: '💰 支払い済み' + amount });
+        }
+      } else {
+        // シングルチケット + 未払いor記録なし → 未払い表示（運営判断材料）
+        list.push({ cls: 'unpaid', text: '⚠ 未払い' });
+      }
+    }
+
+    // 3. 早割対象か（毎月3日までに「参加」と回答した場合）
+    if (resp.earlyBird) {
+      list.push({ cls: 'earlybird', text: '⏰ 早割対象 (-500円)' });
+    } else {
+      list.push({ cls: 'no-earlybird', text: '— 早割対象外' });
+    }
+
+    return list;
+  }
+
+  // ===== スキャン処理 =====
+  function onScanSuccess(decodedText) {
+    if (isPaused || isProcessing) return;
+    if (!selectedEvent) return;
+    const rawCode = (decodedText || '').trim();
+    if (!rawCode) return;
+
+    const now = Date.now();
+    if (rawCode === lastCode && (now - lastCodeAt) < 2000) return;
+    lastCode = rawCode;
+    lastCodeAt = now;
+
+    const token = extractTokenFromQrCode(rawCode);
+    if (!token) return;
+
+    isProcessing = true;
+    // 即座に検出フィードバック（GAS応答を待たない）
+    vibrate(30);
+    showResult('info', '⏳ 照会中...', 'ID: <code>' + escapeHtml(token.substring(0, 24)) + '…</code>', null);
+
+    const _t0 = Date.now();
+    postScan(token, selectedEvent.eventId).then(function (resp) {
+      isProcessing = false;
+      // 処理時間を計測（クライアント側 + サーバ側）
+      const _clientMs = Date.now() - _t0;
+      if (resp && typeof resp === 'object') {
+        resp._clientMs = _clientMs;
+      }
+      handleResponse(resp, token);
+    }).catch(function (err) {
+      isProcessing = false;
+      stats.err++; updateStats();
+      showResult('error', '通信エラー', escapeHtml(err && err.message ? err.message : '通信に失敗しました'), null);
+      addHistory('error', '(通信エラー)', '');
+      beep('error'); vibrate([100, 50, 100]);
+    });
+  }
+
+  function handleResponse(resp, token) {
+    if (!resp || typeof resp !== 'object') {
+      stats.err++; updateStats();
+      showResult('error', 'エラー', '不正なレスポンス', null);
+      addHistory('error', '(不明)', '');
+      beep('error'); vibrate([100, 50, 100]);
+      return;
+    }
+
+    // セッション失効
+    if (resp.ok === false && resp.error === 'session_invalid') {
+      stats.err++; updateStats();
+      pauseScanner();
+      setTimeout(function () {
+        showInvalid('セッションが無効です', resp.message || '公式LINEで「QR読み取り」と送信してリンクを再発行してください。');
+      }, 1500);
+      return;
+    }
+
+    // QR不正
+    if (resp.ok === false && resp.error === 'invalid_qr') {
+      stats.err++; updateStats();
+      showResult('error', '❌ 認識できないQRコード',
+        '読み取った内容: <code>' + escapeHtml(token.substring(0, 40)) + '</code>'
+      );
+      addHistory('error', '(QR不正)', '');
+      beep('error'); vibrate([100, 50, 100]);
+      return;
+    }
+
+    // イベント関連エラー
+    if (resp.ok === false && (resp.error === 'no_event' || resp.error === 'event_not_found' || resp.error === 'event_error')) {
+      stats.err++; updateStats();
+      showResult('error', '❌ イベントエラー', escapeHtml(resp.message || resp.error));
+      addHistory('error', '(イベントエラー)', '');
+      beep('error'); vibrate([100, 50, 100]);
+      return;
+    }
+
+    // 成功（新規 or 重複）
+    if (resp.ok === true) {
+      const name = resp.memberName || '(名前不明)';
+      const memberId = resp.memberId || '';
+      const badges = buildPaymentBadges(resp);
+      // タイミング表示用テキスト（サーバ側 _ms + クライアント往復 _clientMs + 詳細フェーズ）
+      const ms = (resp._clientMs != null) ? resp._clientMs : null;
+      const srv = (resp._ms != null) ? resp._ms : null;
+      let timingStr = '';
+      if (ms != null) {
+        timingStr = '⏱ 照会 ' + ms + 'ms' + (srv != null ? '（うちGAS処理 ' + srv + 'ms）' : '');
+        if (resp._phases && typeof resp._phases === 'object') {
+          const ph = resp._phases;
+          const parts = [];
+          if (ph.session != null) parts.push('session:' + ph.session);
+          if (ph.member != null) parts.push('member:' + ph.member);
+          if (ph.event != null) parts.push('event:' + ph.event);
+          if (ph.attendance != null) parts.push('att:' + ph.attendance);
+          if (ph.summary != null) parts.push('sub:' + ph.summary);
+          if (ph.write != null) parts.push('write:' + ph.write);
+          if (ph.earlyBird != null) parts.push('early:' + ph.earlyBird);
+          if (parts.length > 0) timingStr += '<br>📊 ' + parts.join(' / ') + 'ms';
+        }
+      }
+
+      // 大学名・学年・フリガナ（Phase 24: メンバー情報表示）
+      const univ = String(resp.memberUniversity || '').trim();
+      const grade = String(resp.memberGrade || '').trim();
+      const furi = String(resp.memberFurigana || '').trim();
+      const univLine = (univ || grade)
+        ? '<div style="font-size:13px;color:#666;margin-bottom:2px;">' +
+          escapeHtml(univ) + (univ && grade ? ' ' : '') + escapeHtml(grade) +
+          '</div>'
+        : '';
+      const nameLine = '<div style="font-size:15px;font-weight:bold;color:#10162C;">' +
+        escapeHtml(name) +
+        (furi ? '<span style="font-size:11px;color:#888;font-weight:normal;"> / ' + escapeHtml(furi) + '</span>' : '') +
+        '</div>';
+      const memberInfoHtml = univLine + nameLine +
+        '<div style="font-size:11px;color:#aaa;margin-top:2px;">ID: ' + escapeHtml(memberId) + '</div>' +
+        '<div style="font-size:12px;color:#333;margin-top:6px;">📅 ' + escapeHtml(resp.eventName || '') + '</div>';
+
+      if (resp.alreadyRecorded) {
+        stats.dup++; updateStats();
+        showResult('duplicate',
+          '⚠️ 受付済み',
+          memberInfoHtml,
+          badges,
+          timingStr
+        );
+        addHistory('duplicate', name, memberId);
+        beep('duplicate'); vibrate([50, 30, 50]);
+      } else {
+        stats.ok++; updateStats();
+        showResult('success',
+          '✅ 受付完了',
+          memberInfoHtml,
+          badges,
+          timingStr
+        );
+        addHistory('success', name, memberId);
+        beep('success'); vibrate(80);
+      }
+      return;
+    }
+
+    // その他エラー
+    stats.err++; updateStats();
+    showResult('error',
+      '❌ エラー: ' + escapeHtml(resp.error || 'unknown'),
+      escapeHtml(resp.message || '不明なエラー')
+    );
+    addHistory('error', '(エラー)', '');
+    beep('error'); vibrate([100, 50, 100]);
+  }
+
+  function onScanError() { /* QR検出失敗はノイズなので無視 */ }
+
+  // ===== スキャナー制御 =====
+  function startScanner() {
+    if (scanner) return;
+    // Html5Qrcode（UIなし版）を使い、背面カメラを直接指定して起動
+    scanner = new Html5Qrcode('reader');
+
+    const config = {
+      fps: 10,
+      qrbox: function (vw, vh) {
+        const minEdge = Math.min(vw, vh);
+        const size = Math.floor(minEdge * 0.7);
+        return { width: size, height: size };
+      },
+      aspectRatio: 1.0,
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+    };
+
+    // 試行順:
+    // 1) { facingMode: 'environment' } - シンプル文字列形式（iOS Safari 推奨）
+    // 2) カメラ列挙から背面っぽいデバイスIDを直接指定
+    // 3) どれもダメなら任意の最後のカメラ
+    scanner.start(
+      { facingMode: 'environment' },
+      config,
+      onScanSuccess,
+      onScanError
+    ).then(function () {
+      console.log('カメラ起動成功（facingMode: environment）');
+      setTimeout(checkAndShowTorchButton, 500);
+    }).catch(function (err1) {
+      console.warn('facingMode起動失敗、カメラ列挙でリトライ:', err1 && err1.message ? err1.message : err1);
+      // フォールバック: カメラを列挙して背面っぽいものを選ぶ
+      Html5Qrcode.getCameras().then(function (cameras) {
+        if (!cameras || cameras.length === 0) {
+          throw new Error('カメラが見つかりません');
+        }
+        // 背面カメラのラベルパターンを順に探す
+        let target = null;
+        for (const cam of cameras) {
+          const label = String(cam.label || '').toLowerCase();
+          if (label.indexOf('back') >= 0 || label.indexOf('rear') >= 0 ||
+              label.indexOf('environment') >= 0 || label.indexOf('背面') >= 0) {
+            target = cam;
+            break;
+          }
+        }
+        // 見つからなければ最後（多くの端末で背面が末尾）
+        if (!target) target = cameras[cameras.length - 1];
+        console.log('使用カメラ: ' + (target.label || target.id));
+        return scanner.start(target.id, config, onScanSuccess, onScanError);
+      }).then(function () {
+        console.log('カメラ起動成功（フォールバック）');
+        setTimeout(checkAndShowTorchButton, 500);
+      }).catch(function (err2) {
+        console.error('カメラ起動最終エラー:', err2);
+        const msg = err2 && err2.message ? err2.message : String(err2);
+        showResult('error', 'カメラを起動できません',
+          msg + '<br>ブラウザのカメラ許可を確認してください。', null);
+      });
+    });
+  }
+
+  function checkAndShowTorchButton() {
+    try {
+      if (!scanner || typeof scanner.getRunningTrackCapabilities !== 'function') return;
+      const caps = scanner.getRunningTrackCapabilities();
+      if (caps && caps.torch) {
+        const btn = document.getElementById('btn-torch');
+        if (btn) btn.classList.remove('hidden');
+      }
+    } catch (e) { /* 非対応カメラなら無視 */ }
+  }
+
+  function toggleTorch() {
+    if (!scanner) return;
+    const btn = document.getElementById('btn-torch');
+    const isOn = btn && btn.dataset.on === '1';
+    try {
+      scanner.applyVideoConstraints({
+        advanced: [{ torch: !isOn }]
+      }).then(function () {
+        if (btn) {
+          btn.dataset.on = isOn ? '0' : '1';
+          btn.textContent = isOn ? '💡 ライト' : '🔦 ライト ON';
+        }
+      }).catch(function (e) {
+        console.log('torch切替失敗: ' + e.message);
+      });
+    } catch (e) {
+      console.log('torch切替エラー: ' + e.message);
+    }
+  }
+
+  function pauseScanner() { isPaused = true; }
+  function resumeScanner() { isPaused = false; }
+
+  document.getElementById('btn-torch').addEventListener('click', toggleTorch);
+
+  document.getElementById('btn-change-event').addEventListener('click', function () {
+    if (!confirm('イベントを切り替えますか？\n（現在の履歴は消えませんがスキャンは一旦停止されます）')) return;
+    showEventSelector();
+  });
+
+  // ===== イベント選択画面 =====
+  function showEventSelector() {
+    document.getElementById('screen-main').classList.add('hidden');
+    document.getElementById('screen-invalid').classList.add('hidden');
+    document.getElementById('screen-event-select').classList.remove('hidden');
+    const list = document.getElementById('event-button-list');
+    list.innerHTML = '';
+    if (!todayEvents || todayEvents.length === 0) {
+      list.innerHTML = '<div style="color:#888;font-size:13px;text-align:center;padding:20px;">本日開催のイベントが見つかりません。<br>eventsシートで本日の日付のイベントが「開催済」「開催中」「募集中」のいずれかになっているか確認してください。</div>';
+      return;
+    }
+    todayEvents.forEach(function (ev) {
+      const btn = document.createElement('button');
+      btn.className = 'event-btn';
+      btn.textContent = ev.eventName || ev.eventId;
+      btn.addEventListener('click', function () {
+        selectedEvent = ev;
+        document.getElementById('event-name').textContent = ev.eventName || ev.eventId;
+        document.getElementById('event-id').textContent = ev.eventId;
+        document.getElementById('screen-event-select').classList.add('hidden');
+        document.getElementById('screen-main').classList.remove('hidden');
+        startScanner();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  // ===== 起動シーケンス =====
+  // 1. warmup を非同期で投げる（GASキャッシュを温める / 結果は使わない）
+  // 2. checkSession でセッション検証 + 当日イベント取得
+  // 3. 有効なら todayEvents の数に応じて画面遷移
+  function bootstrap() {
+    // 並列ウォームアップ（失敗してもOK）
+    try { jsonp('scanner_warmup', {}, 20000).catch(function () {}); } catch (e) {}
+
+    checkSession().then(function (resp) {
+      if (!resp || resp.valid !== true) {
+        showInvalid('セッションが無効です',
+          '受付セッションが見つからないか期限切れです。\n公式LINEで「QR読み取り」と送信してリンクを再発行してください。');
+        return;
+      }
+      todayEvents = (resp.todayEvents || []).slice();
+      document.getElementById('screen-loading').classList.add('hidden');
+
+      if (todayEvents.length === 0) {
+        // 本日イベントなし → 選択画面で「ない旨」を表示
+        showEventSelector();
+        return;
+      }
+      if (todayEvents.length === 1) {
+        // 1件だけなら自動選択してメイン画面へ
+        selectedEvent = todayEvents[0];
+        document.getElementById('event-name').textContent = selectedEvent.eventName || selectedEvent.eventId;
+        document.getElementById('event-id').textContent = selectedEvent.eventId;
+        document.getElementById('screen-main').classList.remove('hidden');
+        startScanner();
+        return;
+      }
+      // 複数イベント → 選択画面
+      showEventSelector();
+    }).catch(function (err) {
+      console.error('セッション確認エラー:', err);
+      showInvalid('通信エラー',
+        'GASとの通信に失敗しました（' + (err && err.message ? err.message : 'unknown') + '）。\n電波の良い場所で再度お試しください。');
+    });
+  }
+
+  bootstrap();
+
+})();
+</script>
+</body>
+</html>
