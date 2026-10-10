@@ -448,15 +448,10 @@
     }
   })();
 
-  /* ---- 開催済ページ：開催日を過ぎたイベントを events.json から自動掲載 ---- */
+  /* ---- 開催済ページ：GAS（public_past_events）の開催済イベントと events.json を合わせて自動掲載 ---- */
   (function () {
     var box = document.querySelector("[data-events-past]");
     if (!box) return;
-    function esc(s) {
-      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-      });
-    }
     function fmtDate(s) {
       var d = new Date(s); if (isNaN(d)) return "";
       var w = ["日", "月", "火", "水", "木", "金", "土"];
@@ -467,30 +462,108 @@
       box.innerHTML = '<div class="notice-box reveal in"><span class="notice-badge">Past Events</span>' +
         '<h2>開催済のイベントはまだありません</h2><p>イベント終了後、こちらに掲載していきます。</p></div>';
     }
-    function render(list) {
+    var staticList = null, gasList = null;
+    function str(v) {
+      return String(v == null ? "" : v).trim();
+    }
+    function keyOf(date, name) {
+      var normalized = str(name);
+      if (String.prototype.normalize) normalized = normalized.normalize("NFKC");
+      return str(date) + "|" + normalized.replace(/\s+/g, "");
+    }
+    function fromStatic(list) {
+      var result = [];
       var today = new Date(); today.setHours(0, 0, 0, 0);
-      var past = (list || []).map(function (e) { e._d = new Date(e.date); return e; })
-        .filter(function (e) { return !isNaN(e._d) && e._d < today; })
-        .sort(function (a, b) { return b._d - a._d; });
-      if (!past.length) { emptyNotice(); return; }
+      if (!Array.isArray(list)) return result;
+      list.forEach(function (e) {
+        if (!e || typeof e !== "object") return;
+        var d = new Date(e.date);
+        if (isNaN(d) || d >= today) return;
+        result.push({ date: str(e.date), name: str(e.title), emoji: str(e.emoji), img: str(e.square || e.poster), d: d });
+      });
+      return result;
+    }
+    function fromGas(list) {
+      var result = [];
+      if (!Array.isArray(list)) return result;
+      list.forEach(function (g) {
+        if (!g || typeof g !== "object") return;
+        var date = str(g.date), d = new Date(date), img = str(g.posterUrl);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(d)) return;
+        result.push({ date: date, name: str(g.name), emoji: "", img: /^https:\/\//.test(img) ? img : "", d: d });
+      });
+      return result;
+    }
+    function merge() {
+      var list = fromGas(gasList || []), keys = Object.create(null);
+      list.forEach(function (e) { keys[keyOf(e.date, e.name)] = e; });
+      fromStatic(staticList || []).forEach(function (e) {
+        var existing = keys[keyOf(e.date, e.name)];
+        if (existing) {
+          if (!existing.img) existing.img = e.img;
+          if (!existing.emoji) existing.emoji = e.emoji;
+        } else {
+          list.push(e);
+        }
+      });
+      return list.map(function (e, i) { return { event: e, index: i }; })
+        .sort(function (a, b) { return b.event.d - a.event.d || a.index - b.index; })
+        .map(function (item) { return item.event; });
+    }
+    function card(e, i) {
+      var article = document.createElement("article");
+      article.className = "event-card reveal in d" + ((i % 4) + 1) + (e.img ? "" : " event-card--noimg");
+      var status = document.createElement("span");
+      status.className = "event-status event-status--done";
+      status.textContent = "開催済";
+      article.appendChild(status);
+      var title = document.createElement("h2");
+      title.className = "event-title";
+      title.textContent = (e.emoji ? e.emoji + " " : "") + (e.name || "イベント");
+      article.appendChild(title);
+      if (e.img) {
+        var img = document.createElement("img");
+        img.className = "event-poster";
+        img.src = e.img;
+        img.alt = e.name || "イベントポスター";
+        img.loading = "lazy";
+        article.appendChild(img);
+      } else {
+        var when = fmtDate(e.date);
+        if (when) {
+          var date = document.createElement("span");
+          date.className = "event-when";
+          date.textContent = when;
+          article.appendChild(date);
+        }
+      }
+      return article;
+    }
+    function update() {
+      var list = merge();
+      if (!list.length) { emptyNotice(); return; }
       box.classList.add("events-grid");
-      box.innerHTML = past.map(function (e, i) {
-        var title = (e.emoji ? e.emoji + " " : "") + esc(e.title || "イベント");
-        var img = e.square || e.poster || "";
-        var when = e.dateLabel || fmtDate(e.date);
-        var media = img
-          ? '<img class="event-poster" src="' + esc(img) + '" alt="' + esc(e.title || "イベントポスター") + '" loading="lazy" />'
-          : (when ? '<span class="event-when">' + esc(when) + '</span>' : '');
-        return '<article class="event-card reveal in d' + ((i % 4) + 1) + (img ? '' : ' event-card--noimg') + '">' +
-          '<span class="event-status event-status--done">開催済</span>' +
-          '<h2 class="event-title">' + title + '</h2>' +
-          media + '</article>';
-      }).join("");
+      box.textContent = "";
+      list.forEach(function (e, i) { box.appendChild(card(e, i)); });
     }
     fetch("events.json", { cache: "no-store" })
       .then(function (r) { return r.json(); })
-      .then(function (data) { render(Array.isArray(data) ? data : (data && data.events) || []); })
-      .catch(function () { emptyNotice(); });
+      .then(function (data) {
+        staticList = Array.isArray(data) ? data : (data && data.events) || [];
+        try { update(); } catch (e) {}
+      })
+      .catch(function () { staticList = []; try { update(); } catch (e) {} });
+    var cbName = "__kokokaraPastEvents_" + Math.floor(Math.random() * 1e9);
+    window[cbName] = function (data) {
+      try {
+        if (data && Array.isArray(data.events)) { gasList = data.events; update(); }
+      } catch (e) {}
+      delete window[cbName];
+    };
+    var s = document.createElement("script");
+    s.src = GAS_EXEC_URL + "?action=public_past_events&callback=" + cbName;
+    s.onerror = function () { /* 静的分の表示を維持 */ };
+    document.body.appendChild(s);
   })();
 
   /* =====================================================
