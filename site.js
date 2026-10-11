@@ -566,6 +566,282 @@
     document.body.appendChild(s);
   })();
 
+  /* ---- 申込ページ（apply/・LIFF）：GAS liff_config で受付中イベントと LIFF ID を受け取り、ID トークン付きで liff_apply を POST ---- */
+  (function () {
+    var root = document.querySelector("[data-liff-apply]");
+    if (!root) return;
+    var status = root.querySelector("[data-apply-status]");
+    var eventsBox = root.querySelector("[data-apply-events]");
+    var form = root.querySelector("[data-apply-form]");
+    var result = root.querySelector("[data-apply-result]");
+    var CONFIG_TIMEOUT_MS = 10000, POST_TIMEOUT_MS = 25000;
+    var RESULT_TRIES = 3, RESULT_INTERVAL_MS = 2000, RESULT_TIMEOUT_MS = 5000;
+    var LINE_FRIEND_URL = "https://line.me/R/ti/p/@113crihp";
+    var GRADES = ["1年", "2年", "3年", "4年", "5年", "6年", "修士1年", "修士2年", "博士", "その他"];
+    var FIRST_TIME = ["初参加", "2回目以降"];
+    var ROUTES = ["公式LINE", "Instagram", "オープンチャット", "公式サイト（HP）", "チラシ・ポスター", "友人・知人からの紹介", "ココカラメンバーからの招待", "大学・サークルのつながり", "インターネット検索", "その他"];
+    var PAY_METHODS = ["PayPay", "銀行振込", "クレジットカード"];
+    var MAX = { name: 50, furigana: 50, univ: 60, inviter: 50, question: 1000, extra: 500 };
+    var events = [], payMethods = PAY_METHODS;
+    var FRIEND_MESSAGE = "申込の受付やお支払いの案内は公式LINEでお送りします。公式LINEを友だち追加してから、もう一度このページを開いてください。";
+    var PREPARING = "申込ページを準備中です。しばらくしてから、公式LINEから開き直してください。";
+    function str(v) { return String(v == null ? "" : v).trim(); }
+    function node(tag, cls, text, parent) {
+      var el = document.createElement(tag);
+      if (cls) el.className = cls;
+      if (text != null) el.textContent = text;
+      if (parent) parent.appendChild(el);
+      return el;
+    }
+    function button(cls, text, parent, fn) {
+      var el = node("button", cls, text, parent);
+      el.type = "button";
+      el.addEventListener("click", fn);
+      return el;
+    }
+    function closeButton(parent) {
+      button("btn apply-close", "閉じる", parent, function () { try { window.liff.closeWindow(); } catch (e) {} });
+      if (!window.liff.isInClient()) node("p", "apply-hint", "このページはブラウザのタブを閉じて終了してください。", parent);
+    }
+    function showStatus(text, opts) {
+      status.textContent = "";
+      status.hidden = false;
+      eventsBox.hidden = form.hidden = result.hidden = true;
+      node("p", "apply-message", text, status);
+      if (opts && opts.friendLink) {
+        var a = node("a", "btn", "公式LINEを友だち追加する", status);
+        a.href = LINE_FRIEND_URL; a.target = "_blank"; a.rel = "noopener";
+      }
+      if (opts && opts.close) closeButton(status);
+    }
+    function jsonp(action, prefix, timeout, requestId) {
+      return new Promise(function (resolve) {
+        var cbName = prefix + Math.floor(Math.random() * 1e9);
+        var script = document.createElement("script"), done = false;
+        var timer = setTimeout(function () { finish(null); }, timeout);
+        function finish(data) {
+          if (done) return;
+          done = true; clearTimeout(timer); delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+          resolve(data);
+        }
+        window[cbName] = finish;
+        script.onerror = function () { finish(null); };
+        script.src = GAS_EXEC_URL + "?action=" + action + (requestId ? "&requestId=" + encodeURIComponent(requestId) : "") + "&callback=" + cbName;
+        document.body.appendChild(script);
+      });
+    }
+    function strings(values) {
+      return Array.isArray(values) ? values.filter(function (v) { return typeof v === "string" && str(v); }).map(str) : [];
+    }
+    function questions(values) {
+      var seen = Object.create(null), out = [];
+      if (!Array.isArray(values)) return out;
+      values.slice(0, 10).forEach(function (q) {
+        if (!q) return;
+        var id = str(q.id), title = str(q.title), choices = strings(q.choices);
+        if (!id || !title || seen[id]) return;
+        seen[id] = true;
+        var type = ["text", "paragraph", "choice"].indexOf(q.type) >= 0 ? q.type : "text";
+        if (type === "choice" && !choices.length) type = "text";
+        out.push({ id: id, title: title, type: type, choices: choices, required: q.required === true });
+      });
+      return out;
+    }
+    function normalize(values) {
+      var out = [];
+      if (!Array.isArray(values)) return out;
+      values.slice(0, 20).forEach(function (e) {
+        if (!e || !str(e.eventId) || !str(e.name)) return;
+        var fee = Number(e.fee);
+        if (!isFinite(fee) || fee < 0) return;
+        out.push({ eventId: str(e.eventId), name: str(e.name), date: str(e.date), dateLabel: str(e.dateLabel), start: str(e.start), end: str(e.end), location: str(e.location), fee: fee, feeLabel: str(e.feeLabel), posterUrl: /^https:\/\//.test(str(e.posterUrl)) ? str(e.posterUrl) : "", payDeadlineLabel: str(e.payDeadlineLabel), extraQuestions: questions(e.extraQuestions) });
+      });
+      return out;
+    }
+    function feeLabel(ev) { return ev.feeLabel || (ev.fee === 0 ? "無料" : ev.fee + "円"); }
+    function meta(ev, parent, withLocation) {
+      node("p", "apply-meta", "日時: " + ev.dateLabel + (ev.start || ev.end ? "（" + ev.start + "〜" + ev.end + "）" : ""), parent);
+      if (withLocation && ev.location) node("p", "apply-meta", "場所: " + ev.location, parent);
+      node("p", "apply-meta", "参加費: " + feeLabel(ev), parent);
+    }
+    function renderEvents() {
+      status.hidden = form.hidden = result.hidden = true;
+      eventsBox.hidden = false; eventsBox.textContent = "";
+      events.forEach(function (ev) {
+        var card = node("article", "event-card apply-event", null, eventsBox);
+        if (ev.posterUrl) {
+          var img = node("img", "event-poster", null, card);
+          img.src = ev.posterUrl; img.alt = ev.name + " ポスター"; img.loading = "lazy";
+        }
+        node("h2", "event-title", ev.name, card); meta(ev, card, true);
+        button("btn apply-choose", "このイベントに申し込む", card, function () { openForm(ev); });
+      });
+    }
+    function newRequestId() {
+      var id = "", bytes, i;
+      if (window.crypto && window.crypto.getRandomValues) {
+        bytes = new Uint8Array(16); window.crypto.getRandomValues(bytes);
+        for (i = 0; i < bytes.length; i++) id += ("0" + bytes[i].toString(16)).slice(-2);
+      } else { for (i = 0; i < 32; i++) id += Math.floor(Math.random() * 16).toString(16); }
+      return id;
+    }
+    function openForm(ev) {
+      status.hidden = eventsBox.hidden = result.hidden = true;
+      form.hidden = false; form.textContent = "";
+      var requestId = newRequestId(), fields = [], sending = false;
+      var selected = node("div", "apply-selected", null, form);
+      node("h2", "event-title", ev.name, selected); meta(ev, selected, true);
+      if (events.length > 1) button("btn btn-ghost apply-back", "イベントを選び直す", selected, function () { if (!sending) renderEvents(); });
+      function field(name, title, type, required, choices, max, hint, parent) {
+        var radio = type === "radio", check = type === "checkbox";
+        var wrap = node(radio ? "fieldset" : "div", "apply-field", null, parent || form);
+        var label = node(radio ? "legend" : "label", "apply-label", title, wrap);
+        var id = "apply-" + name, inputs = [], input;
+        if (!radio) label.htmlFor = id;
+        node("span", "apply-req", required ? "必須" : "任意", label);
+        if (radio || check) {
+          var box = node("div", "apply-choices", null, wrap);
+          (check ? [title] : choices).forEach(function (value, i) {
+            var choice = node("label", "apply-choice", null, box);
+            input = node("input", "", null, choice);
+            input.type = check ? "checkbox" : "radio"; input.name = name; input.id = check ? id : id + "-" + i; input.value = value;
+            node("span", "", value, choice); inputs.push(input);
+          });
+        } else {
+          input = node(type === "select" ? "select" : type === "paragraph" ? "textarea" : "input", "apply-input", null, wrap);
+          input.id = id; input.name = name;
+          if (type === "select") {
+            var option = node("option", "", "選んでください", input); option.value = "";
+            choices.forEach(function (value) { var opt = node("option", "", value, input); opt.value = value; });
+          } else {
+            if (type !== "paragraph") input.type = "text";
+            if (max) input.maxLength = max;
+            if (name === "name") input.autocomplete = "name";
+          }
+          inputs.push(input);
+        }
+        if (hint) node("p", "apply-hint", hint, wrap);
+        var error = node("p", "apply-error", null, wrap); error.setAttribute("role", "alert"); error.hidden = true; error.id = id + "-error";
+        inputs.forEach(function (el) { el.required = required; el.setAttribute("aria-describedby", error.id); });
+        fields.push({ name: name, type: type, required: required, choices: choices, max: max, inputs: inputs, error: error });
+      }
+      field("name", "お名前（漢字フルネーム）", "text", true, null, MAX.name, "例: 山田太郎（スペースなし）");
+      field("furigana", "フリガナ（全角カタカナ）", "text", true, null, MAX.furigana, "例: ヤマダタロウ");
+      field("univ", "大学名", "text", true, null, MAX.univ, "例: 京都先端科学大学");
+      field("grade", "学年", "select", true, GRADES);
+      field("firstTime", "ココカラのイベントは初参加ですか？", "radio", true, FIRST_TIME);
+      field("inviter", "招待者", "text", false, null, MAX.inviter, "ココカラメンバーからの招待で参加される方は、招待してくれた方のフルネーム（漢字）を入力してください。");
+      field("route", "このイベントを何で知りましたか？", "select", true, ROUTES, null, "いちばん近いものを1つ選んでください。");
+      ev.extraQuestions.forEach(function (q, i) { field("extra-" + i, q.title, q.type === "choice" ? "radio" : q.type, q.required, q.choices, MAX.extra); });
+      field("question", "質問・食物アレルギーなど", "paragraph", false, null, MAX.question);
+      if (ev.fee > 0) field("payMethod", "支払方法", "radio", true, payMethods, null, "お支払いは事前決済のみです（当日の現金払いはありません）。申込のあと、選んだ方法でのお支払いの案内が公式LINEに届きます。");
+      var policy = node("div", "apply-policy", null, form);
+      if (ev.fee > 0) {
+        var ul = node("ul", "", null, policy);
+        node("li", "", "参加費 " + feeLabel(ev) + " は事前にお支払いください。当日の現金払いはありません。", ul);
+        node("li", "", "お支払い期限: " + (ev.payDeadlineLabel || "開催日の2日前 23:59"), ul);
+        node("li", "", "キャンセル: お支払い期限までのキャンセルは全額返金します。期限を過ぎてからのキャンセルは返金できません。", ul);
+      }
+      field("confirm", ev.fee > 0 ? "上記の内容を確認しました" : "無料イベントであることを確認しました", "checkbox", true, null, null, null, policy);
+      var privacy = node("p", "apply-privacy", "送信した内容は", form);
+      var link = node("a", "", "プライバシーポリシー", privacy); link.href = "../privacy.html";
+      privacy.appendChild(document.createTextNode("に沿って取り扱います。"));
+      var formError = node("p", "apply-form-error", null, form); formError.setAttribute("role", "alert"); formError.hidden = true;
+      var submit = node("button", "btn apply-submit", "申し込む", form); submit.type = "submit";
+      function formMessage(text, retry, label) {
+        formError.textContent = text; formError.hidden = false; sending = false;
+        submit.disabled = !retry; submit.textContent = label || "申し込む";
+      }
+      function validate() {
+        var values = {}, first = null;
+        fields.forEach(function (f) {
+          var value = "", message = "";
+          if (f.type === "radio" || f.type === "checkbox") {
+            f.inputs.forEach(function (el) { if (el.checked) value = str(el.value); });
+          } else value = str(f.inputs[0].value);
+          if (f.required && !value) message = f.type === "checkbox" ? "確認してください" : f.type === "radio" || f.type === "select" ? "選んでください" : "入力してください";
+          else if (f.max && value.length > f.max) message = f.max + "文字以内で入力してください";
+          else if (f.choices && f.choices.length && value && f.choices.indexOf(value) < 0) message = "選んでください";
+          f.error.textContent = message; f.error.hidden = !message;
+          f.inputs.forEach(function (el) { if (message) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid"); });
+          if (message && !first) first = f.inputs[0];
+          values[f.name] = value;
+        });
+        if (first) { first.focus(); return null; }
+        var extra = {};
+        ev.extraQuestions.forEach(function (q, i) { Object.defineProperty(extra, q.id, { value: values["extra-" + i], enumerable: true }); });
+        return { name: values.name, furigana: values.furigana, univ: values.univ, grade: values.grade, firstTime: values.firstTime, inviter: values.inviter, route: values.route, question: values.question, payMethod: ev.fee > 0 ? values.payMethod : "", extra: extra };
+      }
+      function response(res, answers) {
+        if (res && res.ok === true) {
+          form.hidden = true; result.hidden = false; result.textContent = "";
+          node("h2", "", "申込を受け付けました", result);
+          node("p", "", (str(res.eventName) || ev.name) + "（" + ev.dateLabel + "）", result);
+          if (str(res.applyId)) node("p", "", "受付番号: " + str(res.applyId), result);
+          var fee = res.fee != null && isFinite(Number(res.fee)) ? Number(res.fee) : ev.fee;
+          if (fee > 0) {
+            node("p", "", "参加費: " + fee + "円　お支払い方法: " + (str(res.payMethod) || answers.payMethod), result);
+            node("p", "", "お支払いの案内を公式LINEにお送りします。お支払い期限までにお手続きください。", result);
+          } else node("p", "", "当日お会いできるのを楽しみにしています。", result);
+          closeButton(result); return true;
+        }
+        if (!res || res.ok !== false) return false;
+        if (res.code === "not_friend") { showStatus(FRIEND_MESSAGE, { friendLink: true }); return true; }
+        var errors = {
+          token_invalid: "LINEの認証の有効期限が切れました。このページを閉じて、公式LINEから開き直してください。",
+          token_expired: "LINEの認証の有効期限が切れました。このページを閉じて、公式LINEから開き直してください。",
+          event_closed: "このイベントの受付は終了しました。",
+          duplicate: "このイベントにはすでに申し込み済みです。内容を変えたいときは公式LINEのトークでお知らせください。",
+          invalid_input: "入力内容を確認して、もう一度送信してください。"
+        };
+        formMessage(Object.prototype.hasOwnProperty.call(errors, res.code) ? errors[res.code] : "申込を受け付けられませんでした。時間をおいて、もう一度お試しください。", ["token_invalid", "token_expired", "event_closed", "duplicate"].indexOf(res.code) < 0);
+        return true;
+      }
+      function checkResult(answers, attempt) {
+        jsonp("liff_apply_result", "__kokokaraApplyResult_", RESULT_TIMEOUT_MS, requestId).then(function (data) {
+          if (data && data.found === true && response(data, answers)) return;
+          if (attempt < RESULT_TRIES) setTimeout(function () { checkResult(answers, attempt + 1); }, RESULT_INTERVAL_MS);
+          else formMessage("送信結果を確認できませんでした。数分以内に公式LINEに受付のメッセージが届けば、申込は完了しています。届かないときは、下のボタンでもう一度送信してください（同じ申込として扱うので二重にはなりません）。", true, "もう一度送信する");
+        });
+      }
+      form.onsubmit = function (event) {
+        event.preventDefault(); if (sending || submit.disabled) return;
+        var answers = validate(); if (!answers) return;
+        formError.hidden = true;
+        var idToken = window.liff.getIDToken();
+        if (!str(idToken)) { formMessage("LINEの認証情報を取得できませんでした。このページを閉じて、公式LINEから開き直してください。", false); return; }
+        sending = true; submit.disabled = true; submit.textContent = "送信中…";
+        var controller = typeof AbortController === "function" ? new AbortController() : null, timer;
+        var options = { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "liff_apply", requestId: requestId, idToken: idToken, eventId: ev.eventId, answers: answers }), redirect: "follow", cache: "no-store" };
+        if (controller) options.signal = controller.signal;
+        var timeout = new Promise(function (resolve, reject) {
+          timer = setTimeout(function () { if (controller) controller.abort(); reject(new Error("timeout")); }, POST_TIMEOUT_MS);
+        });
+        var post = Promise.resolve().then(function () { return fetch(GAS_EXEC_URL, options); }).then(function (r) { return r.text(); }).then(function (text) { return JSON.parse(text); });
+        Promise.race([post, timeout]).then(function (res) { clearTimeout(timer); if (!response(res, answers)) checkResult(answers, 1); }, function () { clearTimeout(timer); checkResult(answers, 1); });
+      };
+    }
+    if (!window.liff) { showStatus("LINEの読み込みに失敗しました。通信環境を確かめて、公式LINEから開き直してください。"); return; }
+    jsonp("liff_config", "__kokokaraLiffConfig_", CONFIG_TIMEOUT_MS).then(function (cfg) {
+      if (!cfg || !str(cfg.liffId)) { showStatus(PREPARING); return; }
+      window.liff.init({ liffId: str(cfg.liffId), withLoginOnExternalBrowser: false }).then(function () {
+        if (!window.liff.isLoggedIn()) { window.liff.login(); return; }
+        var friendship = typeof window.liff.getFriendship === "function" ? Promise.resolve().then(function () { return window.liff.getFriendship(); }).catch(function () { return null; }) : Promise.resolve(null);
+        friendship.then(function (r) {
+          if (r && r.friendFlag === false) { showStatus(FRIEND_MESSAGE, { friendLink: true }); return; }
+          events = normalize(cfg.events);
+          var methods = strings(cfg.payMethods); if (methods.length) payMethods = methods;
+          if (!events.length) { showStatus("現在、受付中のイベントはありません。", { close: true }); return; }
+          var match = window.location.search.match(/[?&]eventId=([^&#]*)/), id = "";
+          try { if (match) id = decodeURIComponent(match[1]); } catch (e) {}
+          for (var i = 0; i < events.length; i++) { if (events[i].eventId === id) { openForm(events[i]); return; } }
+          renderEvents();
+        });
+      }).catch(function () { showStatus("LINEとの接続に失敗しました。公式LINEのトークから開き直してください。"); });
+    });
+  })();
+
   /* =====================================================
      ヒーロー: 光の帯（CSSアニメーション）
      描画はGPUに任せ、JSはカーソルのわずかな視差だけを担当する。
