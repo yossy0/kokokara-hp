@@ -1,0 +1,23 @@
+# Cloudflare に載せないもの（.gitignore と同じ書式）。公開するのは HTML・CSS・JS・assets/・robots.txt・sitemap.xml・llms.txt・events.json
+.git
+.git/
+.gitignore
+.assetsignore
+wrangler.jsonc
+.wrangler/
+node_modules/
+*.md
+*.ps1
+*.bat
+*.log
+HP修正.txt
+tools/
+.git_broken/
+_t2
+assets/mbti/_raw/
+assets/mbti/_sheet.png
+assets/mbti/_check.png
+# 動画: HP はどのページからも参照していない（2026-10-15）。Cloudflare は 1ファイル 25MiB まで。ページで使うときは 25MiB 未満にしてからこの行を見直す
+*.mp4
+*.webm
+assets/mbti/_new/
