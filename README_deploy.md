@@ -24,17 +24,20 @@
     └── event_20260724_takoyaki.jpg
 ```
 
-## 公開方法（Cloudflare Workers・2026-10-15〜）
-- GitHub `yossy0/kokokara-hp` の main に push すると、Cloudflare Workers が自動で公開する（https://kokokara-official.com/）。設定は `wrangler.jsonc`（静的ファイルだけ。ビルドなし）
-- 公開しないファイルは `.assetsignore` に書く（.gitignore と同じ書式）。新しく内部用のファイルを置いたら、ここに足す
+## 公開方法（ドラッグ&ドロップ・最も簡単）
+1. ブラウザで https://app.netlify.com を開き、ログインします（無料アカウントでOK）。
+2. 「Sites」を開き、「Drag and drop your site output folder here」のエリアに、
+   **このフォルダを丸ごと**ドラッグ&ドロップします。
+3. 数秒〜数十秒で `https://〇〇〇.netlify.app` の公開URLが発行されます。
 
 ## サイトを更新するとき
-1. 変更を main に push する。1〜2分で同じ URL に反映される
+1. 対象サイトの「Deploys」タブを開き、更新後のフォルダを再度ドラッグ&ドロップします。
+2. 同じURLで内容が更新されます。
 
 ## メモ
 - 公式LINE（`https://line.me/R/ti/p/@113crihp`）と参加申込フォーム（Googleフォーム）は、
   すでに全ページに実URLを埋め込み済みです。差し替えが必要な場合は各HTML内のリンクを編集してください。
-- 独自ドメインは Cloudflare の Worker の設定で付ける（kokokara-official.com）。
+- 独自ドメインは Netlify の「Domain settings」から追加できます。
 - 画像を追加する場合は `assets/` に置き、各HTMLの `<img src="assets/...">` を参照してください。
 
 <!-- deploy test: 20260717-0114 -->
