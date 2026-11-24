@@ -24,3 +24,6 @@ assets/mbti/_check.png
 HP修正.txt
 # 自動デプロイ監視のログ（2026-10-07 停止。公開リポジトリに載せない）
 auto_deploy.log
+# Cloudflare Pages のビルド出力（pages_build.mjs が作る）と wrangler の作業フォルダ
+_site/
+.wrangler/
