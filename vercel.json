@@ -1,0 +1,5 @@
+{
+  "redirects": [
+    { "source": "/:path*", "destination": "https://kokokara-hp.pages.dev/:path*", "permanent": true }
+  ]
+}

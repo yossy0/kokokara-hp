@@ -345,6 +345,14 @@
                '<span class="ev-go">詳細・申込へ <span class="arrow">→</span></span>' +
                '</a>';
       }).join("");
+      box.querySelectorAll("a > img").forEach(function (img) {
+        function markSquare() {
+          var ratio = img.naturalWidth / img.naturalHeight;
+          if (ratio >= 0.9 && ratio <= 1.1) img.parentElement.classList.add("is-square");
+        }
+        if (img.complete && img.naturalWidth) markSquare();
+        else img.addEventListener("load", markSquare, { once: true });
+      });
     }
     var cbName = "__cocokaraHomeEvents_" + Math.floor(Math.random() * 1e9);
     window[cbName] = function (data) {
