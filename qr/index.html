@@ -93,6 +93,7 @@
   .pay-badge.plus { background: var(--accent); color: var(--primary); }
   .pay-badge.paid { background: var(--success); color: #fff; }
   .pay-badge.unpaid { background: var(--error); color: #fff; }
+  .pay-badge.local { background: #ef6c00; color: #fff; }
   .pay-badge.norecord { background: #e0e0e0; color: var(--text-muted); }
   .pay-badge.sub-ok { background: #00838f; color: #fff; }
   .pay-badge.free { background: #607d8b; color: #fff; }
@@ -437,7 +438,10 @@
       list.push({ cls: 'paid', text: '💰 支払い済み' });
     } else {
       const ps = String(resp.paymentStatus || '');
-      if (ps === '支払い済' || ps === '支払済' || ps.indexOf('済') >= 0) {
+      if (ps === '現地払い') {
+        const amount = resp.paymentAmount ? '（' + resp.paymentAmount + '円）' : '';
+        list.push({ cls: 'local', text: '💴 現地払い' + amount + '・受付で現金回収' });
+      } else if (ps === '支払い済' || ps === '支払済' || ps.indexOf('済') >= 0) {
         const amount = resp.paymentAmount ? '（' + resp.paymentAmount + '円）' : '';
         if (resp.isPrepay) {
           // Phase 23: 事前決済済み（Stripe で前日に引き落とし済）
