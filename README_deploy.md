@@ -24,20 +24,18 @@
     └── event_20260724_takoyaki.jpg
 ```
 
-## 公開方法（ドラッグ&ドロップ・最も簡単）
-1. ブラウザで https://app.netlify.com を開き、ログインします（無料アカウントでOK）。
-2. 「Sites」を開き、「Drag and drop your site output folder here」のエリアに、
-   **このフォルダを丸ごと**ドラッグ&ドロップします。
-3. 数秒〜数十秒で `https://〇〇〇.netlify.app` の公開URLが発行されます。
+## 公開方法（Cloudflare Pages・2026-11〜）
+- GitHub `yossy0/kokokara-hp` の main に push すると、Cloudflare Pages が自動で公開する（https://kokokara-hp.pages.dev/）
+- Pages の設定: ビルドコマンド `node pages_build.mjs`、出力先 `_site`。`pages_build.mjs` が公開してよいファイルだけを `_site/` に写す
+- 公開しないファイルは `pages_build.mjs` の除外に足す（`.` で始まるもの・`*.md`・`*.ps1`・`*.bat`・動画・`tools/` などは除外済み）。1ファイル 25 MiB まで
 
 ## サイトを更新するとき
-1. 対象サイトの「Deploys」タブを開き、更新後のフォルダを再度ドラッグ&ドロップします。
-2. 同じURLで内容が更新されます。
+1. 変更を main に push する。1〜2分で同じ URL に反映される
 
 ## メモ
 - 公式LINE（`https://line.me/R/ti/p/@113crihp`）と参加申込フォーム（Googleフォーム）は、
   すでに全ページに実URLを埋め込み済みです。差し替えが必要な場合は各HTML内のリンクを編集してください。
-- 独自ドメインは Netlify の「Domain settings」から追加できます。
+- URL は Cloudflare Pages の無料の `kokokara-hp.pages.dev`（独自ドメインなし。名前は後から変えられない）。
 - 画像を追加する場合は `assets/` に置き、各HTMLの `<img src="assets/...">` を参照してください。
 
 <!-- deploy test: 20260717-0114 -->
