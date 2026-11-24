@@ -580,10 +580,10 @@
     var GRADES = ["1年", "2年", "3年", "4年", "5年", "6年", "修士1年", "修士2年", "博士", "その他"];
     var FIRST_TIME = ["初参加", "2回目以降"];
     var ROUTES = ["公式LINE", "Instagram", "オープンチャット", "公式サイト（HP）", "チラシ・ポスター", "友人・知人からの紹介", "ココカラメンバーからの招待", "大学・サークルのつながり", "インターネット検索", "その他"];
-    var PAY_METHODS = ["PayPay", "銀行振込", "クレジットカード"];
+    var PAY_METHODS = ["現地支払い"];
     var MAX = { name: 50, furigana: 50, univ: 60, inviter: 50, question: 1000, extra: 500 };
     var events = [], payMethods = PAY_METHODS;
-    var FRIEND_MESSAGE = "申込の受付やお支払いの案内は公式LINEでお送りします。公式LINEを友だち追加してから、もう一度このページを開いてください。";
+    var FRIEND_MESSAGE = "申込の受付のお知らせは公式LINEでお送りします。公式LINEを友だち追加してから、もう一度このページを開いてください。";
     var PREPARING = "申込ページを準備中です。しばらくしてから、公式LINEから開き直してください。";
     function str(v) { return String(v == null ? "" : v).trim(); }
     function node(tag, cls, text, parent) {
@@ -735,13 +735,12 @@
       field("route", "このイベントを何で知りましたか？", "select", true, ROUTES, null, "いちばん近いものを1つ選んでください。");
       ev.extraQuestions.forEach(function (q, i) { field("extra-" + i, q.title, q.type === "choice" ? "radio" : q.type, q.required, q.choices, MAX.extra); });
       field("question", "質問・食物アレルギーなど", "paragraph", false, null, MAX.question);
-      if (ev.fee > 0) field("payMethod", "支払方法", "radio", true, payMethods, null, "お支払いは事前決済のみです（当日の現金払いはありません）。申込のあと、選んだ方法でのお支払いの案内が公式LINEに届きます。");
+      if (ev.fee > 0) field("payMethod", "支払方法", "radio", true, payMethods, null, "参加費は当日の受付で、現金でお支払いください（事前のお支払いはありません）。");
       var policy = node("div", "apply-policy", null, form);
       if (ev.fee > 0) {
         var ul = node("ul", "", null, policy);
-        node("li", "", "参加費 " + feeLabel(ev) + " は事前にお支払いください。当日の現金払いはありません。", ul);
-        node("li", "", "お支払い期限: " + (ev.payDeadlineLabel || "開催日の2日前 23:59"), ul);
-        node("li", "", "キャンセル: お支払い期限までのキャンセルは全額返金します。期限を過ぎてからのキャンセルは返金できません。", ul);
+        node("li", "", "参加費 " + feeLabel(ev) + " は、当日の受付で現金でお支払いください。", ul);
+        node("li", "", "キャンセル: キャンセルの手続きはありません（返金もありません）。参加できなくなったときは、公式LINEのトークで運営にお知らせください。", ul);
       }
       field("confirm", ev.fee > 0 ? "上記の内容を確認しました" : "無料イベントであることを確認しました", "checkbox", true, null, null, null, policy);
       var privacy = node("p", "apply-privacy", "送信した内容は", form);
@@ -782,7 +781,7 @@
           var fee = res.fee != null && isFinite(Number(res.fee)) ? Number(res.fee) : ev.fee;
           if (fee > 0) {
             node("p", "", "参加費: " + fee + "円　お支払い方法: " + (str(res.payMethod) || answers.payMethod), result);
-            node("p", "", "お支払いの案内を公式LINEにお送りします。お支払い期限までにお手続きください。", result);
+            node("p", "", "参加費は当日の受付で、現金でお支払いください。", result);
           } else node("p", "", "当日お会いできるのを楽しみにしています。", result);
           closeButton(result); return true;
         }
